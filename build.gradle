@@ -1,0 +1,62 @@
+apply plugin: "jacoco"
+apply plugin: "java"
+apply plugin: "org.sonarqube"
+
+// Variables
+def sonarqubeURL        = "http://d.majoinen.com/sonarqube"
+
+buildscript {
+    repositories {
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.2.1"
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile     "com.google.guava:guava:22.0"                   // Guava
+    compile     "org.apache.logging.log4j:log4j-api:2.8.2"      // log4j-api
+    compile     "org.apache.logging.log4j:log4j-core:2.8.2"     // log4j-core
+    compile     "org.xerial:sqlite-jdbc:3.19.3"                 // SQLite
+    testCompile "junit:junit:4.12"                              // JUnit
+    testCompile "org.mockito:mockito-core:2.+"                  // Mockito
+}
+
+// Package the app into a jar - optional version number
+jar {
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    // If the buildNumber property is provided, name the build accordingly
+    if (project.hasProperty('branchName') && project.hasProperty('buildNumber')) {
+        version = "$branchName-$buildNumber"
+    }
+}
+
+// Run code through SonarQube quality tests
+sonarqube {
+    properties {
+        property "sonar.host.url", "$sonarqubeURL"
+    }
+}
+
+// Display unit tests in the console output
+test {
+    ignoreFailures = true
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
+
+test.finalizedBy(project.tasks.jacocoTestReport)
