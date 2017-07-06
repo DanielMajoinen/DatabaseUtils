@@ -110,6 +110,7 @@ public class SQLiteDatabaseController implements DatabaseController {
      * requested Java data type, if the conversion is supported. If the
      * conversion is not supported or null is specified for the type, a
      * SQLException is thrown.
+     *
      * @param resultSet The ResultSet object to retrieve the value from.
      * @param columnLabel The name of the column.
      * @param type Class representing the Java data type to convert the
@@ -134,6 +135,7 @@ public class SQLiteDatabaseController implements DatabaseController {
 
     /**
      * Closes a connection and ResultSet.
+     *
      * @param resultSet The ResultSet to close.
      * @throws SQLException If a database access error occurs when closing
      * the connection or the ResultSet.
