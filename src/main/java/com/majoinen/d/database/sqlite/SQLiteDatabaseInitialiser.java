@@ -6,7 +6,6 @@ import com.majoinen.d.database.DatabaseControllerFactory;
 import com.majoinen.d.database.DatabaseInitialiser;
 import com.majoinen.d.database.DatabaseType;
 import com.majoinen.d.database.exception.DatabaseBackupException;
-import com.majoinen.d.database.exception.InsertFailedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,19 +50,21 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
     private static final String BACKUP_FILE_EXTENSION = ".bak";
 
     // SQL command used when verifying a table in the database
-    private static final String VERIFY_TABLE_STRING =
+    private static final String VERIFY_TABLE_QUERY =
       "SELECT `sql` FROM `sqlite_master` WHERE `name` = ?";
 
     // Column label to check when verifying a table in the database
     private static final String VERIFY_TABLE_COLUMN_LABEL = "sql";
 
-    private final DatabaseController databaseController;
-    private final Class<?> caller;
+    private static SQLiteDatabaseInitialiser instance = null;
 
-    public SQLiteDatabaseInitialiser(Class<?> caller) {
-        this.caller = caller;
-        databaseController = DatabaseControllerFactory.getInstance()
-          .getController(DatabaseType.SQLITE, caller);
+    private DatabaseController databaseController;
+    private Class<?> caller;
+
+    public static SQLiteDatabaseInitialiser getInstance() {
+        if(instance == null)
+            instance = new SQLiteDatabaseInitialiser();
+        return instance;
     }
 
     /**
@@ -76,9 +77,13 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * are any permission issues when accessing the config file.
      */
     @Override
-    public void init() throws SQLException, IOException {
+    public void init(Class<?> caller) throws SQLException, IOException {
+        this.caller = caller;
+        databaseController = DatabaseControllerFactory.getInstance()
+          .getController(DatabaseType.SQLITE, caller);
         File directory = new File(SQLiteDatabaseProperties.DATABASE_DIRECTORY);
-        if(directory.mkdirs() && !verifyDatabase()) {
+        directory.mkdirs();
+        if(!verifyDatabase()) {
             backupDatabase();
             initDatabase();
         }
@@ -120,19 +125,25 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * are any permission issues when accessing the config file.
      */
     private boolean verifyTable(String tableName) throws SQLException, IOException {
-        InputStream inputStream;
-        InputStreamReader isReader;
-        ResultSet resultSet;
-        String query;
-        String sql;
-
-        inputStream = caller.getResourceAsStream(SQL_RESOURCE_DIR + tableName + SQL_FILE_EXTENSION);
-        isReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-        query = CharStreams.toString(isReader);
-        resultSet = databaseController.select(VERIFY_TABLE_STRING, Arrays.asList(tableName));
-        sql = (String) databaseController.getObject(resultSet, VERIFY_TABLE_COLUMN_LABEL, String.class, true);
+        String filename = SQL_RESOURCE_DIR + tableName + SQL_FILE_EXTENSION;
+        InputStream inputStream = caller.getResourceAsStream(filename);
+        // Ensure appropriate sql file is found for the table
+        if(inputStream == null)
+            throw new NullPointerException(
+              "Could not find resource file: /resources"+filename);
+        // Convert input stream to String
+        InputStreamReader inputStreamReader = new InputStreamReader(
+          inputStream, StandardCharsets.UTF_8);
+        String query = CharStreams.toString(inputStreamReader);
+        // Close streams
         inputStream.close();
-        isReader.close();
+        inputStreamReader.close();
+        // Get current schema from database
+        ResultSet resultSet = databaseController.select(VERIFY_TABLE_QUERY,
+          Arrays.asList(tableName));
+        String sql = (String) databaseController.getObject(resultSet,
+          VERIFY_TABLE_COLUMN_LABEL, String.class, true);
+        // Compare table sql file to current schema and return
         return sql != null && sql.equals(query);
     }
 
@@ -167,19 +178,25 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      */
     private boolean initTable(String tableName) throws SQLException,
       IOException {
-        InputStream inputStream;
-        InputStreamReader isReader;
-        String[] queries;
-
-        inputStream = caller.getResourceAsStream(SQL_RESOURCE_DIR + tableName + SQL_FILE_EXTENSION);
-        if(inputStream == null)
-            throw new InsertFailedException("SQL File Missing for: "+tableName);
-        isReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-        queries = CharStreams.toString(isReader).split(QUERY_DELIMITER);
-        for(String query : queries)
-            databaseController.insert(query, null);
-        inputStream.close();
-        isReader.close();
+        String filename = SQL_RESOURCE_DIR + tableName + SQL_FILE_EXTENSION;
+        InputStream inputStream = caller.getResourceAsStream(filename);
+        if(inputStream != null) {
+            InputStreamReader inputStreamReader = new InputStreamReader(
+              inputStream, StandardCharsets.UTF_8);
+            String[] queries = CharStreams.toString(inputStreamReader)
+              .split(QUERY_DELIMITER);
+            for (String query : queries) {
+                if (query.length() == 0)
+                    throw new NullPointerException(
+                      "/resources"+filename+" contains empty query");
+                databaseController.insert(query, null);
+            }
+            inputStream.close();
+            inputStreamReader.close();
+        }
+        else {
+            logger.debug("Skipping /resources"+filename+" as file not found");
+        }
         return true;
     }
 
