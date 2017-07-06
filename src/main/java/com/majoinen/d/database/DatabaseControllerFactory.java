@@ -19,10 +19,11 @@ public class DatabaseControllerFactory {
         return instance;
     }
 
-    public DatabaseController getController(DatabaseType type) {
+    public DatabaseController getController(DatabaseType type, Class<?>
+      caller) {
         DatabaseController controller = null;
         if(type.equals(DatabaseType.SQLITE))
-            controller = new SQLiteDatabaseController();
+            controller = new SQLiteDatabaseController(caller);
         return controller;
     }
 }
