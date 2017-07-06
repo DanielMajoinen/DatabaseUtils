@@ -82,14 +82,47 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
           CONFIG_RESOURCE_DIR + CONFIG_FILENAME);
         if (inputStream != null) {
             properties.load(inputStream);
-            databaseName = properties.getProperty(DATABASE_NAME_KEY);
-            tableNames = Arrays.asList(properties.getProperty(TABLE_NAMES_KEY)
-              .split(properties.getProperty(TABLES_DELIMITER_KEY)));
+            setDatabaseName(properties);
+            setTableNames(properties);
             inputStream.close();
+        } else {
+            throw new FileNotFoundException("DBUtils requires config file: " +
+              "resources" + CONFIG_RESOURCE_DIR + CONFIG_FILENAME);
         }
-        else {
-            throw new FileNotFoundException("Can't find config file: " +
-              CONFIG_FILENAME);
+    }
+
+    private void setDatabaseName(Properties properties) {
+        String property = properties.getProperty(DATABASE_NAME_KEY);
+        if(property == null) {
+            throw new NullPointerException(
+              "DatabaseUtils config missing property: " + DATABASE_NAME_KEY);
         }
+        if(property.length() == 0) {
+            throw new NullPointerException(
+              "DatabaseUtils missing property value: " + DATABASE_NAME_KEY);
+        }
+        databaseName = property;
+    }
+
+    private void setTableNames(Properties properties) {
+        String tables = properties.getProperty(TABLE_NAMES_KEY);
+        String delimiter = properties.getProperty(TABLES_DELIMITER_KEY);
+        if(tables == null) {
+            throw new NullPointerException(
+              "DatabaseUtils config missing property: " + TABLE_NAMES_KEY);
+        }
+        if(tables.length() == 0) {
+            throw new NullPointerException(
+              "DatabaseUtils missing property value: " + TABLE_NAMES_KEY);
+        }
+        if(delimiter == null) {
+            throw new NullPointerException(
+              "DatabaseUtils config missing property: " + TABLES_DELIMITER_KEY);
+        }
+        if(delimiter.length() == 0) {
+            throw new NullPointerException(
+              "DatabaseUtils missing property value: " + TABLES_DELIMITER_KEY);
+        }
+        tableNames = Arrays.asList(tables.split(delimiter));
     }
 }
