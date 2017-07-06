@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * Getters for properties required no matter the database implementation type,
- * accessed from its corresponding config file.
+ * defined in its corresponding config file.
  *
  * @author Daniel Majoinen
  * @version 1.0, 5/7/17
