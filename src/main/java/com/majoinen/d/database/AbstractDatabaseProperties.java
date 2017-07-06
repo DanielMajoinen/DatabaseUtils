@@ -13,7 +13,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties {
     protected static final String CONFIG_RESOURCE_DIR = "/config/";
 
     // The name of the config file
-    protected static final String CONFIG_FILENAME = "database.properties";
+    protected static final String CONFIG_FILENAME = "dbutils.properties";
 
     // The key for the database name in the config .properties file
     protected static final String DATABASE_NAME_KEY = "databaseName";
@@ -21,6 +21,6 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties {
     // The key for the table names list in the config .properties file
     protected static final String TABLE_NAMES_KEY = "tableNames";
 
-    // The key for the tables delimiter in database.properties
+    // The key for the tables delimiter in dbutils.properties
     protected static final String TABLES_DELIMITER_KEY = "delimiter";
 }
