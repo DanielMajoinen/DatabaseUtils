@@ -13,7 +13,7 @@ public class DatabaseControllerFactory {
 
     private static DatabaseControllerFactory instance = null;
 
-    private static DatabaseControllerFactory getInstance() {
+    public static DatabaseControllerFactory getInstance() {
         if(instance == null)
             instance = new DatabaseControllerFactory();
         return instance;
