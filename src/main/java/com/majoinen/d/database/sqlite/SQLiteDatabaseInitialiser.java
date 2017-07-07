@@ -1,6 +1,5 @@
 package com.majoinen.d.database.sqlite;
 
-import com.google.common.io.CharStreams;
 import com.majoinen.d.database.DatabaseInitialiser;
 import com.majoinen.d.database.exception.TableMismatchException;
 import org.apache.logging.log4j.LogManager;
@@ -8,9 +7,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -113,19 +112,7 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      */
     private boolean verifyTable(String tableName) throws SQLException,
       IOException {
-        String filename = SQL_RESOURCE_DIR + tableName + SQL_FILE_EXTENSION;
-        InputStream inputStream = caller.getResourceAsStream(filename);
-        // Ensure appropriate sql file is found for the table
-        if(inputStream == null)
-            throw new NullPointerException(
-              "Could not find resource file: /resources"+filename);
-        // Convert input stream to String
-        InputStreamReader inputStreamReader = new InputStreamReader(
-          inputStream, StandardCharsets.UTF_8);
-        String query = CharStreams.toString(inputStreamReader);
-        // Close streams
-        inputStream.close();
-        inputStreamReader.close();
+        String query = getTableSQL(tableName, true);
         // Get current schema from database
         ResultSet resultSet = databaseController.select(VERIFY_TABLE_QUERY,
           Arrays.asList(tableName));
@@ -168,25 +155,46 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      */
     private boolean initTable(String tableName) throws SQLException,
       IOException {
-        String filename = SQL_RESOURCE_DIR + tableName + SQL_FILE_EXTENSION;
-        InputStream inputStream = caller.getResourceAsStream(filename);
-        if(inputStream != null) {
-            InputStreamReader inputStreamReader = new InputStreamReader(
-              inputStream, StandardCharsets.UTF_8);
-            String[] queries = CharStreams.toString(inputStreamReader)
-              .split(QUERY_DELIMITER);
+        String file = getTableSQL(tableName, false);
+        String filename = SQL_RESOURCE_DIR
+          .concat(tableName)
+          .concat(SQL_FILE_EXTENSION);
+        if(file != null) {
+            String[] queries = file.split(QUERY_DELIMITER);
             for (String query : queries) {
                 if (query.length() == 0)
                     throw new NullPointerException(
-                      "/resources"+filename+" contains empty query");
+                      "resources"+filename+" contains empty query");
                 databaseController.insert(query, null);
             }
-            inputStream.close();
-            inputStreamReader.close();
         } else {
-            logger.debug("Skipping /resources"+filename+": File not found");
+            logger.debug("Skipping resources"+filename+": File not found");
             return false;
         }
         return true;
+    }
+
+    /**
+     * Gets a specified tables sql file contents from the resource folder and
+     * returns it in the form of a string. Used when verifying and creating
+     * tables.
+     *
+     * @param tableName The name of the table to retrieve sql file contents.
+     * @param required Whether to throw an exception if the sql file does not
+     * exist or not.
+     * @return The contents of the tables.sql file as a String.
+     * @throws IOException If there is any issue accessing the tables .sql file.
+     */
+    private String getTableSQL(String tableName, boolean required)
+      throws IOException {
+        String filename = SQL_RESOURCE_DIR
+          .concat(tableName)
+          .concat(SQL_FILE_EXTENSION);
+        URL url = caller.getResource(filename);
+        if(url == null && required)
+            throw new NullPointerException("resources/"+filename+" is missing");
+        else if(url == null)
+            return null;
+        return new String(Files.readAllBytes(Paths.get(url.getPath())));
     }
 }
