@@ -4,6 +4,7 @@ apply plugin: "org.sonarqube"
 
 // Variables
 def sonarqubeURL        = "http://d.majoinen.com/sonarqube"
+version = "1.0"
 
 buildscript {
     repositories {
