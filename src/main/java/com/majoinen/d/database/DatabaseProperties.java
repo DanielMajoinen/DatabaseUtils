@@ -11,6 +11,6 @@ import java.util.List;
  * @version 1.0, 5/7/17
  */
 public interface DatabaseProperties {
-    String getDatabaseName() throws IOException;
-    List<String> getTableNames() throws IOException;
+    String getDatabaseName(Class<?> caller) throws IOException;
+    List<String> getTableNames(Class<?> caller) throws IOException;
 }

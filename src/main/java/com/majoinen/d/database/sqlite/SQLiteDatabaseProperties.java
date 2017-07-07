@@ -29,14 +29,12 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
 
     private static SQLiteDatabaseProperties instance = null;
 
-    private Class<?> caller;
     private String databaseName;
     private List<String> tableNames;
 
-    static SQLiteDatabaseProperties getInstance(Class<?> caller) {
+    static SQLiteDatabaseProperties getInstance() {
         if(instance == null)
             instance = new SQLiteDatabaseProperties();
-        instance.caller = caller;
         return instance;
     }
 
@@ -49,9 +47,9 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
      * any permission issues when accessing the config file.
      */
     @Override
-    public String getDatabaseName() throws IOException {
+    public String getDatabaseName(Class<?> caller) throws IOException {
         if(databaseName == null)
-            getProperties();
+            getProperties(caller);
         return databaseName;
     }
 
@@ -63,9 +61,9 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
      * any permission issues when accessing the config file.
      */
     @Override
-    public List<String> getTableNames() throws IOException {
+    public List<String> getTableNames(Class<?> caller) throws IOException {
         if(tableNames == null)
-            getProperties();
+            getProperties(caller);
         return tableNames;
     }
 
@@ -76,7 +74,7 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
      * @throws IOException If the config file is not found or if there are
      * any permission issues when accessing the config file.
      */
-    private void getProperties() throws IOException {
+    private void getProperties(Class<?> caller) throws IOException {
         Properties  properties = new Properties();
         InputStream inputStream = caller.getResourceAsStream(
           CONFIG_RESOURCE_DIR + CONFIG_FILENAME);
