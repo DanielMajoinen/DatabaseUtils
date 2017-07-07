@@ -1,11 +1,8 @@
 package com.majoinen.d.database.sqlite;
 
 import com.google.common.io.CharStreams;
-import com.majoinen.d.database.DatabaseController;
-import com.majoinen.d.database.DatabaseControllerFactory;
 import com.majoinen.d.database.DatabaseInitialiser;
-import com.majoinen.d.database.DatabaseType;
-import com.majoinen.d.database.exception.DatabaseBackupException;
+import com.majoinen.d.database.exception.TableMismatchException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,15 +13,14 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Initialises a SQLite database and populates it with tables. If the
  * database exists it will verify all tables schema matches the corresponding
  * sql file.
+ *
+ * TODO: Add migration between database versions
  *
  * @author Daniel Majoinen
  * @version 1.0, 5/7/17
@@ -46,9 +42,6 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
     // The file extension of sql files
     private static final String SQL_FILE_EXTENSION = ".sql";
 
-    // The file extension of a backed up database
-    private static final String BACKUP_FILE_EXTENSION = ".bak";
-
     // SQL command used when verifying a table in the database
     private static final String VERIFY_TABLE_QUERY =
       "SELECT `sql` FROM `sqlite_master` WHERE `name` = ?";
@@ -56,15 +49,15 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
     // Column label to check when verifying a table in the database
     private static final String VERIFY_TABLE_COLUMN_LABEL = "sql";
 
-    private static SQLiteDatabaseInitialiser instance = null;
-
-    private DatabaseController databaseController;
+    private SQLiteDatabaseController databaseController;
+    private SQLiteDatabaseProperties properties;
     private Class<?> caller;
 
-    public static SQLiteDatabaseInitialiser getInstance() {
-        if(instance == null)
-            instance = new SQLiteDatabaseInitialiser();
-        return instance;
+    SQLiteDatabaseInitialiser(SQLiteDatabaseController controller,
+      SQLiteDatabaseProperties properties, Class<?> caller) {
+        this.databaseController = controller;
+        this.properties = properties;
+        this.caller = caller;
     }
 
     /**
@@ -77,10 +70,7 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * are any permission issues when accessing the config file.
      */
     @Override
-    public void init(Class<?> caller) throws SQLException, IOException {
-        this.caller = caller;
-        databaseController = DatabaseControllerFactory.getInstance()
-          .getController(DatabaseType.SQLITE, caller);
+    public void init() throws SQLException, IOException {
         File directory = new File(SQLiteDatabaseProperties.DATABASE_DIRECTORY);
         directory.mkdirs();
         if(!verifyDatabase()) {
@@ -98,9 +88,7 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * are any permission issues when accessing the config file.
      */
     private boolean verifyDatabase() throws SQLException, IOException {
-        List<String> tableNames =
-          SQLiteDatabaseProperties.getInstance(caller).getTableNames();
-        for (String tableName : tableNames) {
+        for (String tableName : properties.getTableNames()) {
             if (verifyTable(tableName)) {
                 logger.debug("Successfully verified table: " + tableName);
             } else {
@@ -123,7 +111,8 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * @throws IOException If the database config file is not found or if there
      * are any permission issues when accessing the config file.
      */
-    private boolean verifyTable(String tableName) throws SQLException, IOException {
+    private boolean verifyTable(String tableName) throws SQLException,
+      IOException {
         String filename = SQL_RESOURCE_DIR + tableName + SQL_FILE_EXTENSION;
         InputStream inputStream = caller.getResourceAsStream(filename);
         // Ensure appropriate sql file is found for the table
@@ -143,7 +132,11 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
         String sql = (String) databaseController.getObject(resultSet,
           VERIFY_TABLE_COLUMN_LABEL, String.class, true);
         // Compare table sql file to current schema and return
-        return sql != null && sql.equals(query);
+        if(sql == null)
+            return false;
+        else if(!sql.equals(query))
+            throw new TableMismatchException("Incorrect schema: " + tableName);
+        return true;
     }
 
     /**
@@ -155,9 +148,7 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      */
     private void initDatabase() throws SQLException,
       IOException {
-        List<String> tableNames =
-          SQLiteDatabaseProperties.getInstance(caller).getTableNames();
-        for(String tableName : tableNames) {
+        for(String tableName : properties.getTableNames()) {
             if(initTable(tableName))
                 logger.debug("Successfully added table: " + tableName);
             if(initTable(tableName + INSERT_FILE_SUFFIX))
@@ -192,9 +183,9 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
             }
             inputStream.close();
             inputStreamReader.close();
-        }
-        else {
-            logger.debug("Skipping /resources"+filename+" as file not found");
+        } else {
+            logger.debug("Skipping /resources"+filename+": File not found");
+            return false;
         }
         return true;
     }

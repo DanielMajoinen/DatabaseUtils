@@ -21,5 +21,5 @@ public interface DatabaseInitialiser {
      * @throws IOException If the database config file is not found or if there
      * are any permission issues when accessing the config file.
      */
-    void init(Class<?> caller) throws SQLException, IOException;
+    void init() throws SQLException, IOException;
 }
