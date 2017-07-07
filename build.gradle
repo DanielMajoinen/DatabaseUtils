@@ -30,11 +30,6 @@ dependencies {
 
 // Package the app into a jar - optional version number
 jar {
-    from {
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
     // If the buildNumber property is provided, name the build accordingly
     if (project.hasProperty('branchName') && project.hasProperty('buildNumber')) {
         version = "$branchName-$buildNumber"
