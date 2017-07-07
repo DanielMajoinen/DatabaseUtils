@@ -71,30 +71,30 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
     public void init() throws DBUtilsException {
         File directory = new File(SQLiteDatabaseProperties.DATABASE_DIRECTORY);
         directory.mkdirs();
-        if(!verifyDatabase()) {
-            initDatabase();
-        }
+        initDatabase();
     }
 
     /**
-     * Verify the entire database, single table at a time.
+     * Verify the entire database a single table at a time and create missing
+     * tables.
      *
-     * @return True if all tables successfully verify, or false otherwise.
      * @throws DBUtilsException If there was a database error when verifying a
      * table or connecting to the database; If the database config file is not
      * found or if there are any permission issues when accessing the config
      * file.
      */
-    private boolean verifyDatabase() throws DBUtilsException {
+    private void initDatabase() throws DBUtilsException {
         for (String tableName : properties.getTableNames()) {
             if (verifyTable(tableName)) {
                 logger.debug("Successfully verified table: " + tableName);
             } else {
                 logger.debug("Failed verifying table: " + tableName);
-                return false;
+                if(initTable(tableName))
+                    logger.debug("Successfully added table: " + tableName);
+                if(initTable(tableName + INSERT_FILE_SUFFIX))
+                    logger.debug("Successfully inserted data into: "+tableName);
             }
         }
-        return true;
     }
 
     /**
@@ -116,27 +116,12 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
         String sql = (String) databaseController.getObject(resultSet,
           VERIFY_TABLE_COLUMN_LABEL, String.class, true);
         // Compare table sql file to current schema and return
-        if(sql == null)
+        if(sql == null) {
             return false;
-        else if(!sql.equals(query))
+        } else if(!sql.equals(query)) {
             throw new TableMismatchException("Incorrect schema: " + tableName);
-        return true;
-    }
-
-    /**
-     * Begins the process of initialising all tables provided in the database
-     * config file.
-     *
-     * @throws DBUtilsException If the database config file is not found or if
-     * there are any permission issues when accessing the config file.
-     */
-    private void initDatabase() throws DBUtilsException {
-        for(String tableName : properties.getTableNames()) {
-            if(initTable(tableName))
-                logger.debug("Successfully added table: " + tableName);
-            if(initTable(tableName + INSERT_FILE_SUFFIX))
-                logger.debug("Successfully inserted data into: " + tableName);
         }
+        return true;
     }
 
     /**
