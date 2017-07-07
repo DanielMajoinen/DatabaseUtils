@@ -27,15 +27,12 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
     // The SQLite database file extension
     static final String DATABASE_FILE_EXTENSION = ".db";
 
-    private static SQLiteDatabaseProperties instance = null;
-
+    private Class<?> caller;
     private String databaseName;
     private List<String> tableNames;
 
-    static SQLiteDatabaseProperties getInstance() {
-        if(instance == null)
-            instance = new SQLiteDatabaseProperties();
-        return instance;
+    SQLiteDatabaseProperties(Class<?> caller) {
+        this.caller = caller;
     }
 
     /**
@@ -47,9 +44,9 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
      * any permission issues when accessing the config file.
      */
     @Override
-    public String getDatabaseName(Class<?> caller) throws IOException {
+    public String getDatabaseName() throws IOException {
         if(databaseName == null)
-            getProperties(caller);
+            getProperties();
         return databaseName;
     }
 
@@ -61,9 +58,9 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
      * any permission issues when accessing the config file.
      */
     @Override
-    public List<String> getTableNames(Class<?> caller) throws IOException {
+    public List<String> getTableNames() throws IOException {
         if(tableNames == null)
-            getProperties(caller);
+            getProperties();
         return tableNames;
     }
 
@@ -74,7 +71,7 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
      * @throws IOException If the config file is not found or if there are
      * any permission issues when accessing the config file.
      */
-    private void getProperties(Class<?> caller) throws IOException {
+    private void getProperties() throws IOException {
         Properties  properties = new Properties();
         InputStream inputStream = caller.getResourceAsStream(
           CONFIG_RESOURCE_DIR + CONFIG_FILENAME);
@@ -94,8 +91,7 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
         if(property == null) {
             throw new NullPointerException(
               "DatabaseUtils config missing property: " + DATABASE_NAME_KEY);
-        }
-        if(property.length() == 0) {
+        } else if(property.length() == 0) {
             throw new NullPointerException(
               "DatabaseUtils missing property value: " + DATABASE_NAME_KEY);
         }
@@ -108,16 +104,13 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
         if(tables == null) {
             throw new NullPointerException(
               "DatabaseUtils config missing property: " + TABLE_NAMES_KEY);
-        }
-        if(tables.length() == 0) {
+        } else if(tables.length() == 0) {
             throw new NullPointerException(
               "DatabaseUtils missing property value: " + TABLE_NAMES_KEY);
-        }
-        if(delimiter == null) {
+        } else if(delimiter == null) {
             throw new NullPointerException(
               "DatabaseUtils config missing property: " + TABLES_DELIMITER_KEY);
-        }
-        if(delimiter.length() == 0) {
+        } else if(delimiter.length() == 0) {
             throw new NullPointerException(
               "DatabaseUtils missing property value: " + TABLES_DELIMITER_KEY);
         }
