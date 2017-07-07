@@ -1,12 +1,17 @@
 package com.majoinen.d.database.sqlite;
 
 import com.majoinen.d.database.DatabaseController;
-import com.majoinen.d.database.DatabaseProperties;
+import com.majoinen.d.database.exception.DatabaseBackupException;
 import com.majoinen.d.database.exception.InsertFailedException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.*;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * A database facade DAOs will use when communicating with an SQLite database.
@@ -16,12 +21,21 @@ import java.util.List;
  */
 public class SQLiteDatabaseController implements DatabaseController {
 
-    private DatabaseProperties databaseProperties;
+    private static final Logger logger =
+      LogManager.getLogger(SQLiteDatabaseController.class);
+
+    // The file extension of a backed up database
+    private static final String BACKUP_FILE_EXTENSION = ".bak";
+
+    private SQLiteDatabaseProperties properties;
+
     private Connection connection = null;
     private PreparedStatement statement = null;
 
-    public SQLiteDatabaseController(Class<?> caller) {
-        databaseProperties = SQLiteDatabaseProperties.getInstance(caller);
+    public SQLiteDatabaseController(Class<?> caller) throws SQLException,
+      IOException {
+        this.properties = new SQLiteDatabaseProperties(caller);
+        new SQLiteDatabaseInitialiser(this, properties, caller).init();
     }
 
     /**
@@ -68,12 +82,10 @@ public class SQLiteDatabaseController implements DatabaseController {
         try {
             openConnectionWithoutAutoCommit();
             affectedRows += executeInserts(queries, varsList);
-        }
-        catch(SQLException e) {
+        } catch(SQLException e) {
             connection.rollback();
             throw new InsertFailedException(e.getMessage());
-        }
-        finally {
+        } finally {
             connection.commit();
             closeConnection();
         }
@@ -131,6 +143,66 @@ public class SQLiteDatabaseController implements DatabaseController {
                 closeResultSetAndConnection(resultSet);
         }
         return type.cast(result);
+    }
+
+    /**
+     * Makes a copy of the database, with the current time in the filename.
+     *
+     * @return True if successful backup or false otherwise.
+     * @throws DatabaseBackupException If an IOException occurs when creating
+     * a copy of the database file.
+     */
+    @Override
+    public boolean backupDatabase() throws DatabaseBackupException {
+        try {
+            File database = new File(currentFilename());
+            File backupDatabase = new File(newFilename());
+            if (database.length() > 0) {
+                if (Files.copy(database.toPath(), backupDatabase.toPath())
+                  .equals(backupDatabase.toPath())) {
+                    logger.debug("Backed up old database");
+                } else {
+                    throw new DatabaseBackupException(
+                      "Expected backup path does not match result");
+                }
+            } else {
+                logger.debug("Database is empty: Skipping backup");
+            }
+        } catch(IOException e) {
+            throw new DatabaseBackupException(
+              "IOException backing up database: " + e.getMessage());
+        }
+        return true;
+    }
+
+    /**
+     * Determine the new name for the database file when backing it up, based
+     * on the time.
+     *
+     * @return New name for the database.
+     * @throws IOException If the database config file is not found or if there
+     * are any permission issues when accessing the config file.
+     */
+    private String newFilename() throws IOException {
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new java.util.Date());
+        return SQLiteDatabaseProperties.DATABASE_DIRECTORY
+          .concat(properties.getDatabaseName())
+          .concat("-")
+          .concat(timestamp)
+          .concat(BACKUP_FILE_EXTENSION);
+    }
+
+    /**
+     * Get the current database filename so that it can be backed up.
+     *
+     * @return The current database file name.
+     * @throws IOException If the database config file is not found or if there
+     * are any permission issues when accessing the config file.
+     */
+    private String currentFilename() throws IOException {
+        return SQLiteDatabaseProperties.DATABASE_DIRECTORY
+          .concat(properties.getDatabaseName())
+          .concat(SQLiteDatabaseProperties.DATABASE_FILE_EXTENSION);
     }
 
     /**
@@ -252,7 +324,7 @@ public class SQLiteDatabaseController implements DatabaseController {
         connection = DriverManager.getConnection(
           SQLiteDatabaseProperties.DATABASE_TYPE_PREFIX +
             SQLiteDatabaseProperties.DATABASE_DIRECTORY +
-            databaseProperties.getDatabaseName() +
+            properties.getDatabaseName() +
             SQLiteDatabaseProperties.DATABASE_FILE_EXTENSION);
     }
 

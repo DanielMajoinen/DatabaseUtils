@@ -1,5 +1,7 @@
 package com.majoinen.d.database;
 
+import com.majoinen.d.database.exception.DatabaseBackupException;
+
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -82,4 +84,13 @@ public interface DatabaseController {
      */
     Object getObject(ResultSet resultSet, String columnLabel, Class<?> type,
       boolean closeConnection) throws SQLException;
+
+    /**
+     * Backups the database.
+     *
+     * @return True if successfully backups the database, or false otherwise.
+     * @throws DatabaseBackupException If any error occurs during the backup
+     * process.
+     */
+    boolean backupDatabase() throws DatabaseBackupException;
 }
