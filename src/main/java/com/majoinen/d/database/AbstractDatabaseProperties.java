@@ -23,4 +23,6 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties {
 
     // The key for the tables delimiter in dbutils.properties
     protected static final String TABLES_DELIMITER_KEY = "tableNamesDelim";
+
+    protected AbstractDatabaseProperties() {}
 }
