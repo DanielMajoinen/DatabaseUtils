@@ -1,7 +1,6 @@
 package com.majoinen.d.database;
 
-import java.io.IOException;
-import java.sql.SQLException;
+import com.majoinen.d.database.exception.DBUtilsException;
 
 /**
  * The DatabaseInitialiser is responsible for creating/initialising the
@@ -16,10 +15,11 @@ public interface DatabaseInitialiser {
      * Verify the database. If the database does not exist, create it. If the
      * database fails verification for any reason, back up the database and
      * create a new database.
-     * @throws SQLException If there was a database error when verifying a
-     * table or connecting to the database.
-     * @throws IOException If the database config file is not found or if there
-     * are any permission issues when accessing the config file.
+     *
+     * @throws DBUtilsException If there was a database error when verifying a
+     * table or connecting to the database; If the database config file is not
+     * found or if there are any permission issues when accessing the config
+     * file.
      */
-    void init() throws SQLException, IOException;
+    void init() throws DBUtilsException;
 }

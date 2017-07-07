@@ -1,6 +1,7 @@
 package com.majoinen.d.database.sqlite;
 
 import com.majoinen.d.database.DatabaseInitialiser;
+import com.majoinen.d.database.exception.DBUtilsException;
 import com.majoinen.d.database.exception.TableMismatchException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,15 +12,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 
 /**
  * Initialises a SQLite database and populates it with tables. If the
  * database exists it will verify all tables schema matches the corresponding
  * sql file.
- *
- * TODO: Add migration between database versions
  *
  * @author Daniel Majoinen
  * @version 1.0, 5/7/17
@@ -63,13 +61,14 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * Verify the database. If the database does not exist, create it. If the
      * database fails verification for any reason, back up the database and
      * create a new database.
-     * @throws SQLException If there was a database error when verifying a
-     * table or connecting to the database.
-     * @throws IOException If the database config file is not found or if there
-     * are any permission issues when accessing the config file.
+     *
+     * @throws DBUtilsException If there was a database error when verifying a
+     * table or connecting to the database; If the database config file is not
+     * found or if there are any permission issues when accessing the config
+     * file.
      */
     @Override
-    public void init() throws SQLException, IOException {
+    public void init() throws DBUtilsException {
         File directory = new File(SQLiteDatabaseProperties.DATABASE_DIRECTORY);
         directory.mkdirs();
         if(!verifyDatabase()) {
@@ -81,12 +80,12 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * Verify the entire database, single table at a time.
      *
      * @return True if all tables successfully verify, or false otherwise.
-     * @throws SQLException If there was a database error when verifying a
-     * table or connecting to the database.
-     * @throws IOException If the database config file is not found or if there
-     * are any permission issues when accessing the config file.
+     * @throws DBUtilsException If there was a database error when verifying a
+     * table or connecting to the database; If the database config file is not
+     * found or if there are any permission issues when accessing the config
+     * file.
      */
-    private boolean verifyDatabase() throws SQLException, IOException {
+    private boolean verifyDatabase() throws DBUtilsException {
         for (String tableName : properties.getTableNames()) {
             if (verifyTable(tableName)) {
                 logger.debug("Successfully verified table: " + tableName);
@@ -105,13 +104,11 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * @param tableName The table to verify.
      * @return Returns true if the table exists and matches schema, or false
      * otherwise.
-     * @throws SQLException If there was a database error when verifying the
-     * table.
-     * @throws IOException If the database config file is not found or if there
+     * @throws DBUtilsException If there was a database error when verifying the
+     * table; If the database config file is not found or if there
      * are any permission issues when accessing the config file.
      */
-    private boolean verifyTable(String tableName) throws SQLException,
-      IOException {
+    private boolean verifyTable(String tableName) throws DBUtilsException {
         String query = getTableSQL(tableName, true);
         // Get current schema from database
         ResultSet resultSet = databaseController.select(VERIFY_TABLE_QUERY,
@@ -130,11 +127,10 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * Begins the process of initialising all tables provided in the database
      * config file.
      *
-     * @throws IOException If the database config file is not found or if there
-     * are any permission issues when accessing the config file.
+     * @throws DBUtilsException If the database config file is not found or if
+     * there are any permission issues when accessing the config file.
      */
-    private void initDatabase() throws SQLException,
-      IOException {
+    private void initDatabase() throws DBUtilsException {
         for(String tableName : properties.getTableNames()) {
             if(initTable(tableName))
                 logger.debug("Successfully added table: " + tableName);
@@ -149,16 +145,15 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      *
      * @param tableName Name of the table to create.
      * @return True if the table is successfully initialised.
-     * @throws SQLException If there was a database error creating the table.
-     * @throws IOException If the database config file is not found or if there
+     * @throws DBUtilsException If there was a database error creating the
+     * table; if the database config file is not found or if there
      * are any permission issues when accessing the config file.
      */
-    private boolean initTable(String tableName) throws SQLException,
-      IOException {
+    private boolean initTable(String tableName) throws DBUtilsException {
         String file = getTableSQL(tableName, false);
-        String filename = SQL_RESOURCE_DIR
-          .concat(tableName)
-          .concat(SQL_FILE_EXTENSION);
+        String filename = SQL_RESOURCE_DIR.
+          concat(tableName).
+          concat(SQL_FILE_EXTENSION);
         if(file != null) {
             String[] queries = file.split(QUERY_DELIMITER);
             for (String query : queries) {
@@ -183,18 +178,23 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * @param required Whether to throw an exception if the sql file does not
      * exist or not.
      * @return The contents of the tables.sql file as a String.
-     * @throws IOException If there is any issue accessing the tables .sql file.
+     * @throws DBUtilsException If there is any issue accessing the tables .sql
+     * file.
      */
-    private String getTableSQL(String tableName, boolean required)
-      throws IOException {
-        String filename = SQL_RESOURCE_DIR
-          .concat(tableName)
-          .concat(SQL_FILE_EXTENSION);
+    private String getTableSQL(String tableName, boolean required) throws
+      DBUtilsException {
+        String filename = SQL_RESOURCE_DIR.
+          concat(tableName).
+          concat(SQL_FILE_EXTENSION);
         URL url = caller.getResource(filename);
         if(url == null && required)
             throw new NullPointerException("resources/"+filename+" is missing");
         else if(url == null)
             return null;
-        return new String(Files.readAllBytes(Paths.get(url.getPath())));
+        try {
+            return new String(Files.readAllBytes(Paths.get(url.getPath())));
+        } catch(IOException e) {
+            throw new DBUtilsException(e);
+        }
     }
 }

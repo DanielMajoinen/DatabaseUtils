@@ -1,10 +1,8 @@
 package com.majoinen.d.database;
 
-import com.majoinen.d.database.exception.DatabaseBackupException;
+import com.majoinen.d.database.exception.DBUtilsException;
 
-import java.io.IOException;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -22,14 +20,14 @@ public interface DatabaseController {
      * @param query Insert query to execute.
      * @param vars List of variables which match the type the query expects.
      * @return The amount of affected rows.
-     * @throws SQLException If parameterIndex does not correspond to a parameter
-     * marker in the SQL statement; if a database access error occurs; this
-     * method is called on a closed PreparedStatement; the type of the given
-     * object is ambiguous or the SQL statement returns a ResultSet object.
-     * @throws IOException If the database config file is not found or if there
+     * @throws DBUtilsException If parameterIndex does not correspond to a
+     * parameter marker in the SQL statement; if a database access error
+     * occurs; this method is called on a closed PreparedStatement; the type
+     * of the given object is ambiguous or the SQL statement returns a
+     * ResultSet object; If the database config file is not found or if there
      * are any permission issues when accessing the file.
      */
-    int insert(String query, List<?> vars) throws SQLException, IOException;
+    int insert(String query, List<?> vars) throws DBUtilsException;
 
     /**
      * Executes a list of queries which are dependent on each other. If one
@@ -39,15 +37,15 @@ public interface DatabaseController {
      * @param varsList 2D List of variables which must match the type the query
      * expects.
      * @return The amount of affected rows.
-     * @throws SQLException If parameterIndex does not correspond to a parameter
-     * marker in the SQL statement; if a database access error occurs; this
-     * method is called on a closed PreparedStatement; the type of the given
-     * object is ambiguous or the SQL statement returns a ResultSet object.
-     * @throws IOException If the database config file is not found or if there
+     * @throws DBUtilsException If parameterIndex does not correspond to a
+     * parameter marker in the SQL statement; if a database access error
+     * occurs; this method is called on a closed PreparedStatement; the type
+     * of the given object is ambiguous or the SQL statement returns a
+     * ResultSet object; If the database config file is not found or if there
      * are any permission issues when accessing the file.
      */
     int insert(List<String> queries, List<List<?>> varsList) throws
-      SQLException, IOException;
+      DBUtilsException;
 
     /**
      * Execute a SELECT query with provided parameters on the database.
@@ -56,15 +54,14 @@ public interface DatabaseController {
      * @param vars List of variables which must match the type the query
      * expects.
      * @return Returns the queries results in the form of a ResultSet.
-     * @throws SQLException If parameterIndex does not correspond to a parameter
-     * marker in the SQL statement; if a database access error occurs; this
-     * method is called on a closed PreparedStatement; the type of the given
-     * object is ambiguous or the SQL statement does not return a ResultSet
-     * object.
-     * @throws IOException If the database config file is not found or if there
+     * @throws DBUtilsException If parameterIndex does not correspond to a
+     * parameter marker in the SQL statement; if a database access error
+     * occurs; this method is called on a closed PreparedStatement; the type
+     * of the given object is ambiguous or the SQL statement does not return
+     * a ResultSet object; If the database config file is not found or if there
      * are any permission issues when accessing the file.
      */
-    ResultSet select(String query, List<?> vars) throws SQLException, IOException;
+    ResultSet select(String query, List<?> vars) throws DBUtilsException;
 
     /**
      * Retrieves the value of the designated column in the current row of this
@@ -79,18 +76,18 @@ public interface DatabaseController {
      * @param closeConnection Whether to close the ResultSet and Connection
      * or not.
      * @return an instance of type holding the column value.
-     * @throws SQLException if conversion is not supported, type is null or
+     * @throws DBUtilsException if conversion is not supported, type is null or
      * another error occurs.
      */
     Object getObject(ResultSet resultSet, String columnLabel, Class<?> type,
-      boolean closeConnection) throws SQLException;
+      boolean closeConnection) throws DBUtilsException;
 
     /**
      * Backups the database.
      *
      * @return True if successfully backups the database, or false otherwise.
-     * @throws DatabaseBackupException If any error occurs during the backup
+     * @throws DBUtilsException If any error occurs during the backup
      * process.
      */
-    boolean backupDatabase() throws DatabaseBackupException;
+    boolean backupDatabase() throws DBUtilsException;
 }

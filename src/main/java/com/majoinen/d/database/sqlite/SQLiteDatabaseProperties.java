@@ -1,8 +1,9 @@
 package com.majoinen.d.database.sqlite;
 
 import com.majoinen.d.database.AbstractDatabaseProperties;
+import com.majoinen.d.database.exception.ConfigFileNotFoundException;
+import com.majoinen.d.database.exception.DBUtilsException;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -27,6 +28,14 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
     // The SQLite database file extension
     static final String DATABASE_FILE_EXTENSION = ".db";
 
+    // Message when required key is missing in config
+    private static final String MISSING_KEY_MSG =
+      "DatabaseUtils missing property key: ";
+
+    // Message when value is missing in config
+    private static final String MISSING_VALUE_MSG =
+      "DatabaseUtils missing property value: ";
+
     private Class<?> caller;
     private String databaseName;
     private List<String> tableNames;
@@ -40,11 +49,11 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
      * config file.
      *
      * @return The database name as a String.
-     * @throws IOException If the config file is not found or if there are
+     * @throws DBUtilsException If the config file is not found or if there are
      * any permission issues when accessing the config file.
      */
     @Override
-    public String getDatabaseName() throws IOException {
+    public String getDatabaseName() throws DBUtilsException {
         if(databaseName == null)
             getProperties();
         return databaseName;
@@ -54,11 +63,11 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
      * Get a list of table names as specified in the appropriate config file.
      *
      * @return A list of table names in/or meant to be in the database.
-     * @throws IOException If the config file is not found or if there are
+     * @throws DBUtilsException If the config file is not found or if there are
      * any permission issues when accessing the config file.
      */
     @Override
-    public List<String> getTableNames() throws IOException {
+    public List<String> getTableNames() throws DBUtilsException {
         if(tableNames == null)
             getProperties();
         return tableNames;
@@ -68,21 +77,25 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
      * Loads properties found in the config file. Defines databaseName and
      * tableNames.
      *
-     * @throws IOException If the config file is not found or if there are
+     * @throws DBUtilsException If the config file is not found or if there are
      * any permission issues when accessing the config file.
      */
-    private void getProperties() throws IOException {
-        Properties  properties = new Properties();
+    private void getProperties() throws DBUtilsException {
+        Properties properties = new Properties();
         InputStream inputStream = caller.getResourceAsStream(
           CONFIG_RESOURCE_DIR + CONFIG_FILENAME);
         if (inputStream != null) {
-            properties.load(inputStream);
-            setDatabaseName(properties);
-            setTableNames(properties);
-            inputStream.close();
+            try {
+                properties.load(inputStream);
+                setDatabaseName(properties);
+                setTableNames(properties);
+                inputStream.close();
+            } catch(IOException e) {
+                throw new DBUtilsException("Error loading properties file", e);
+            }
         } else {
-            throw new FileNotFoundException("DBUtils requires config file: " +
-              "resources" + CONFIG_RESOURCE_DIR + CONFIG_FILENAME);
+            throw new ConfigFileNotFoundException("DBUtils requires config " +
+              "file: resources" + CONFIG_RESOURCE_DIR + CONFIG_FILENAME);
         }
     }
 
@@ -96,10 +109,10 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
         String property = properties.getProperty(DATABASE_NAME_KEY);
         if(property == null) {
             throw new NullPointerException(
-              "DatabaseUtils config missing property: " + DATABASE_NAME_KEY);
+              MISSING_KEY_MSG + DATABASE_NAME_KEY);
         } else if(property.length() == 0) {
             throw new NullPointerException(
-              "DatabaseUtils missing property value: " + DATABASE_NAME_KEY);
+              MISSING_VALUE_MSG + DATABASE_NAME_KEY);
         }
         databaseName = property;
     }
@@ -115,16 +128,16 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
         String delimiter = properties.getProperty(TABLES_DELIMITER_KEY);
         if(tables == null) {
             throw new NullPointerException(
-              "DatabaseUtils config missing property: " + TABLE_NAMES_KEY);
+              MISSING_KEY_MSG + TABLE_NAMES_KEY);
         } else if(tables.length() == 0) {
             throw new NullPointerException(
-              "DatabaseUtils missing property value: " + TABLE_NAMES_KEY);
+              MISSING_VALUE_MSG + TABLE_NAMES_KEY);
         } else if(delimiter == null) {
             throw new NullPointerException(
-              "DatabaseUtils config missing property: " + TABLES_DELIMITER_KEY);
+              MISSING_KEY_MSG + TABLES_DELIMITER_KEY);
         } else if(delimiter.length() == 0) {
             throw new NullPointerException(
-              "DatabaseUtils missing property value: " + TABLES_DELIMITER_KEY);
+              MISSING_VALUE_MSG + TABLES_DELIMITER_KEY);
         }
         tableNames = Arrays.asList(tables.split(delimiter));
     }

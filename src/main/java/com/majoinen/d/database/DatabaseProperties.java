@@ -1,6 +1,7 @@
 package com.majoinen.d.database;
 
-import java.io.IOException;
+import com.majoinen.d.database.exception.DBUtilsException;
+
 import java.util.List;
 
 /**
@@ -11,6 +12,6 @@ import java.util.List;
  * @version 1.0, 5/7/17
  */
 public interface DatabaseProperties {
-    String getDatabaseName() throws IOException;
-    List<String> getTableNames() throws IOException;
+    String getDatabaseName() throws DBUtilsException;
+    List<String> getTableNames() throws DBUtilsException;
 }
