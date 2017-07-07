@@ -84,7 +84,6 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
         File directory = new File(SQLiteDatabaseProperties.DATABASE_DIRECTORY);
         directory.mkdirs();
         if(!verifyDatabase()) {
-            backupDatabase();
             initDatabase();
         }
     }
@@ -198,54 +197,5 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
             logger.debug("Skipping /resources"+filename+" as file not found");
         }
         return true;
-    }
-
-    /**
-     * Backups a database by renaming it.
-     *
-     * @throws IOException If the database config file is not found or if there
-     * are any permission issues when accessing the config file.
-     */
-    private void backupDatabase() throws IOException {
-        File database = new File(currentFilename());
-        File backupDatabase = new File(newFilename());
-        if(database.length() > 0) {
-            if(database.renameTo(backupDatabase))
-                logger.debug("Backed up old database");
-            else
-                throw new DatabaseBackupException();
-        }
-        else
-            logger.debug("Database is empty: Skipping backup");
-    }
-
-    /**
-     * Determine the new name for the database file when backing it up, based
-     * on the time.
-     *
-     * @return New name for the database.
-     * @throws IOException If the database config file is not found or if there
-     * are any permission issues when accessing the config file.
-     */
-    private String newFilename() throws IOException {
-        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        return SQLiteDatabaseProperties.DATABASE_DIRECTORY
-          .concat(SQLiteDatabaseProperties.getInstance(caller).getDatabaseName())
-          .concat("-")
-          .concat(timestamp)
-          .concat(BACKUP_FILE_EXTENSION);
-    }
-
-    /**
-     * Get the current database filename so that it can be backed up.
-     *
-     * @return The current database file name.
-     * @throws IOException If the database config file is not found or if there
-     * are any permission issues when accessing the config file.
-     */
-    private String currentFilename() throws IOException {
-        return SQLiteDatabaseProperties.DATABASE_DIRECTORY
-          .concat(SQLiteDatabaseProperties.getInstance(caller).getDatabaseName())
-          .concat(SQLiteDatabaseProperties.DATABASE_FILE_EXTENSION);
     }
 }
