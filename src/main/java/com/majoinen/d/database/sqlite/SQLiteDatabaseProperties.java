@@ -86,6 +86,12 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
         }
     }
 
+    /**
+     * Gets the database name from the properties file and provides error
+     * handling.
+     *
+     * @param properties Properties object with database.properties file loaded.
+     */
     private void setDatabaseName(Properties properties) {
         String property = properties.getProperty(DATABASE_NAME_KEY);
         if(property == null) {
@@ -98,6 +104,12 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
         databaseName = property;
     }
 
+    /**
+     * Gets the table names and delimiter for the table names from the
+     * properties file and provides error handling.
+     *
+     * @param properties Properties object with database.properties file loaded.
+     */
     private void setTableNames(Properties properties) {
         String tables = properties.getProperty(TABLE_NAMES_KEY);
         String delimiter = properties.getProperty(TABLES_DELIMITER_KEY);
