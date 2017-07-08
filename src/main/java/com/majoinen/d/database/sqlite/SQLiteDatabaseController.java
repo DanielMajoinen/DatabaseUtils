@@ -33,9 +33,9 @@ public class SQLiteDatabaseController implements DatabaseController {
     private Connection connection;
     private PreparedStatement statement;
 
-    public SQLiteDatabaseController(Class<?> caller) throws DBUtilsException {
-        this.properties = new SQLiteDatabaseProperties(caller);
-        new SQLiteDatabaseInitialiser(this, properties, caller).init();
+    public SQLiteDatabaseController() throws DBUtilsException {
+        this.properties = new SQLiteDatabaseProperties();
+        new SQLiteDatabaseInitialiser(this, properties).init();
     }
 
     /**

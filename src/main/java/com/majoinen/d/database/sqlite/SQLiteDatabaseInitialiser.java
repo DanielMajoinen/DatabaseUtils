@@ -48,13 +48,11 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
 
     private SQLiteDatabaseController databaseController;
     private SQLiteDatabaseProperties properties;
-    private Class<?> caller;
 
     SQLiteDatabaseInitialiser(SQLiteDatabaseController controller,
-      SQLiteDatabaseProperties properties, Class<?> caller) {
+      SQLiteDatabaseProperties properties) {
         this.databaseController = controller;
         this.properties = properties;
-        this.caller = caller;
     }
 
     /**
@@ -171,7 +169,7 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
         String filename = SQL_RESOURCE_DIR.
           concat(tableName).
           concat(SQL_FILE_EXTENSION);
-        URL url = caller.getResource(filename);
+        URL url = getClass().getResource(filename);
         if(url == null && required)
             throw new NullPointerException("resources/"+filename+" is missing");
         else if(url == null)

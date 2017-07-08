@@ -36,13 +36,8 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
     private static final String MISSING_VALUE_MSG =
       "DatabaseUtils missing property value: ";
 
-    private Class<?> caller;
     private String databaseName;
     private List<String> tableNames;
-
-    SQLiteDatabaseProperties(Class<?> caller) {
-        this.caller = caller;
-    }
 
     /**
      * Get the value of the database name as specified in the appropriate
@@ -82,7 +77,7 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
      */
     private void getProperties() throws DBUtilsException {
         Properties properties = new Properties();
-        InputStream inputStream = caller.getResourceAsStream(
+        InputStream inputStream = getClass().getResourceAsStream(
           CONFIG_RESOURCE_DIR + CONFIG_FILENAME);
         if (inputStream != null) {
             try {
