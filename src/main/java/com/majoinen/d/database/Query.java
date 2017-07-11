@@ -59,7 +59,7 @@ public class Query extends AbstractQuery {
         try {
             int i = 0;
             for (T parameter : parameters) {
-                connection.statement().setObject(++i, parameter);
+                dbUtilsConnection().statement().setObject(++i, parameter);
             }
         } catch(SQLException e) {
             throw new DBUtilsException("Error adding parameter to query", e);
