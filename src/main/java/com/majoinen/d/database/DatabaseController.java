@@ -2,7 +2,6 @@ package com.majoinen.d.database;
 
 import com.majoinen.d.database.exception.DBUtilsException;
 
-import java.sql.ResultSet;
 import java.util.List;
 
 /**
@@ -15,79 +14,38 @@ import java.util.List;
 public interface DatabaseController {
 
     /**
-     * Run a single INSERT query on the database.
+     * Prepare a provided single query for execution.
      *
-     * @param query Insert query to execute.
-     * @param vars List of variables which match the type the query expects.
-     * @return The amount of affected rows.
-     * @throws DBUtilsException If parameterIndex does not correspond to a
-     * parameter marker in the SQL statement; if a database access error
-     * occurs; this method is called on a closed PreparedStatement; the type
-     * of the given object is ambiguous or the SQL statement returns a
-     * ResultSet object; If the database config file is not found or if there
-     * are any permission issues when accessing the file.
+     * @param query The query to prepare. This is a String that follows SQL
+     * syntax.
+     * @return A Query object which can have parameters added to it and
+     * provides ability to execute the query.
+     * @throws DBUtilsException If any SQLExceptions occur preparing the
+     * statement or creating the Query.
      */
-    int insert(String query, List<?> vars) throws DBUtilsException;
+    Query prepareQuery(String query) throws DBUtilsException;
 
     /**
-     * Executes a list of queries which are dependent on each other. If one
-     * fails, none of the queries will be executed.
+     * Prepare a batch query, where all queries are dependent on each other.
      *
-     * @param queries List of insert query to execute.
-     * @param varsList 2D List of variables which must match the type the query
-     * expects.
-     * @return The amount of affected rows.
-     * @throws DBUtilsException If parameterIndex does not correspond to a
-     * parameter marker in the SQL statement; if a database access error
-     * occurs; this method is called on a closed PreparedStatement; the type
-     * of the given object is ambiguous or the SQL statement returns a
-     * ResultSet object; If the database config file is not found or if there
-     * are any permission issues when accessing the file.
+     * @param queries An unknown amount of queries to add to the batch queries
+     * list. This is a list of Strings that follows SQL syntax.
+     * @return A BatchQuery object which can have further queries, or
+     * parameters added to it, and provides ability to execute queries.
+     * @throws DBUtilsException If any SQLExceptions occur preparing the
+     * statement or creating the BatchQuery.
      */
-    int insert(List<String> queries, List<List<?>> varsList) throws
-      DBUtilsException;
+    BatchQuery prepareBatchQuery(String... queries) throws DBUtilsException;
 
     /**
-     * Execute a SELECT query with provided parameters on the database.
+     * Prepare a batch query, where all queries are dependent on each other.
      *
-     * @param query Select query to execute.
-     * @param vars List of variables which must match the type the query
-     * expects.
-     * @return Returns the queries results in the form of a ResultSet.
-     * @throws DBUtilsException If parameterIndex does not correspond to a
-     * parameter marker in the SQL statement; if a database access error
-     * occurs; this method is called on a closed PreparedStatement; the type
-     * of the given object is ambiguous or the SQL statement does not return
-     * a ResultSet object; If the database config file is not found or if there
-     * are any permission issues when accessing the file.
+     * @param queries An unknown amount of queries to add to the batch queries
+     * list. This is a list of Strings that follows SQL syntax.
+     * @return A BatchQuery object which can have further queries, or
+     * parameters added to it, and provides ability to execute queries.
+     * @throws DBUtilsException If any SQLExceptions occur preparing the
+     * statement or creating the BatchQuery.
      */
-    ResultSet select(String query, List<?> vars) throws DBUtilsException;
-
-    /**
-     * Retrieves the value of the designated column in the current row of this
-     * ResultSet object and will convert from the SQL type of the column to the
-     * requested Java data type, if the conversion is supported. If the
-     * conversion is not supported or null is specified for the type, a
-     * SQLException is thrown.
-     * @param resultSet The ResultSet object to retrieve the value from.
-     * @param columnLabel The name of the column.
-     * @param type Class representing the Java data type to convert the
-     * designated column to.
-     * @param closeConnection Whether to close the ResultSet and Connection
-     * or not.
-     * @return an instance of type holding the column value.
-     * @throws DBUtilsException if conversion is not supported, type is null or
-     * another error occurs.
-     */
-    Object getObject(ResultSet resultSet, String columnLabel, Class<?> type,
-      boolean closeConnection) throws DBUtilsException;
-
-    /**
-     * Backups the database.
-     *
-     * @return True if successfully backups the database, or false otherwise.
-     * @throws DBUtilsException If any error occurs during the backup
-     * process.
-     */
-    boolean backupDatabase() throws DBUtilsException;
+    BatchQuery prepareBatchQuery(List<String> queries) throws DBUtilsException;
 }
