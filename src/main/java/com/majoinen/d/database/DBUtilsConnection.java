@@ -28,10 +28,18 @@ public class DBUtilsConnection {
         this.connectionProvider = connectionProvider;
     }
 
+    /**
+     * Getter for Connection.
+     * @return The current connection.
+     */
     public Connection connection() {
         return connection;
     }
 
+    /**
+     * Getter for PreparedStatement.
+     * @return The current PreparedStatement.
+     */
     public PreparedStatement statement() {
         return statement;
     }
