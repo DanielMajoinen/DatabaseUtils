@@ -39,6 +39,10 @@ public class SQLiteDatabaseProperties extends AbstractDatabaseProperties {
     private String databaseName;
     private List<String> tableNames;
 
+    SQLiteDatabaseProperties() {
+        // Empty constructor
+    }
+
     /**
      * Get the value of the database name as specified in the appropriate
      * config file.
