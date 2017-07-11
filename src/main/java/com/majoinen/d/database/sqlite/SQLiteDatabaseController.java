@@ -72,7 +72,7 @@ public class SQLiteDatabaseController implements DatabaseController, ConnectionP
     public BatchQuery prepareBatchQuery(List<String> queries) throws
       DBUtilsException {
         logger.debug("[DBUtils] Preparing list of batch queries");
-        return prepareBatchQuery((String[]) queries.toArray());
+        return prepareBatchQuery(queries.toArray(new String[0]));
     }
 
     /**
