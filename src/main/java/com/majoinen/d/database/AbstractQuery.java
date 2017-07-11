@@ -2,8 +2,6 @@ package com.majoinen.d.database;
 
 import com.majoinen.d.database.exception.DBUtilsException;
 import com.majoinen.d.database.exception.InsertException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,13 +17,18 @@ import java.util.List;
  */
 public abstract class AbstractQuery {
 
-    private static final Logger logger =
-      LogManager.getLogger(AbstractQuery.class);
-
-    protected DBUtilsConnection connection;
+    private DBUtilsConnection connection;
 
     public AbstractQuery(DBUtilsConnection connection) {
         this.connection = connection;
+    }
+
+    /**
+     * Getter for DBUtilsConnection.
+     * @return Current DBUtilsConnection.
+     */
+    protected DBUtilsConnection dbUtilsConnection() {
+        return connection;
     }
 
     /**

@@ -35,10 +35,10 @@ public class BatchQuery extends Query {
     public BatchQuery prepareBatchQuery(String query) throws DBUtilsException {
         try {
             executeBatchUpdate();
-            connection.connection().prepareStatement(query);
+            dbUtilsConnection().connection().prepareStatement(query);
         } catch(DBUtilsException e) {
             rollbackConnection();
-            connection.close();
+            dbUtilsConnection().close();
             throw new DBUtilsException("Error executing batch update", e);
         } catch(SQLException e) {
             throw new DBUtilsException("Error preparing query", e);
@@ -96,7 +96,7 @@ public class BatchQuery extends Query {
             throw new DBUtilsException("Error executing batch update", e);
         } finally {
             commitConnection();
-            connection.close();
+            dbUtilsConnection().close();
         }
     }
 
@@ -108,7 +108,7 @@ public class BatchQuery extends Query {
      */
     private void executeBatchUpdate() throws DBUtilsException {
         try {
-            affectedRows += connection.statement().executeUpdate();
+            affectedRows += dbUtilsConnection().statement().executeUpdate();
         } catch(SQLException e) {
             throw new InsertException(e);
         }
@@ -122,7 +122,7 @@ public class BatchQuery extends Query {
      */
     private void commitConnection() throws DBUtilsException {
         try {
-            connection.connection().commit();
+            dbUtilsConnection().connection().commit();
         } catch(SQLException e) {
             throw new DBUtilsException("Error committing connection", e);
         }
@@ -136,7 +136,7 @@ public class BatchQuery extends Query {
      */
     private void rollbackConnection() throws DBUtilsException {
         try {
-            connection.connection().rollback();
+            dbUtilsConnection().connection().rollback();
         } catch(SQLException e) {
             throw new DBUtilsException("Error rolling back connection", e);
         }
