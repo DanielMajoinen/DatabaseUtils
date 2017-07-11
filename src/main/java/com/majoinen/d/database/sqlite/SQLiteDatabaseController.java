@@ -16,7 +16,8 @@ import java.util.List;
  * @author Daniel Majoinen
  * @version 1.0, 5/7/17
  */
-public class SQLiteDatabaseController implements DatabaseController, ConnectionProvider {
+public class SQLiteDatabaseController implements DatabaseController,
+    ConnectionProvider {
 
     private static final Logger logger =
       LogManager.getLogger(SQLiteDatabaseController.class);
