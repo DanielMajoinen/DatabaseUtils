@@ -95,7 +95,7 @@ public abstract class AbstractQuery {
         List<T> list = new ArrayList<>();
         try {
             if(resultSet == null || resultSet.isClosed())
-                return null;
+                return new ArrayList<>();
             while(resultSet.next())
                 list.add(mapper.map(resultSet));
         } catch(SQLException e) {
