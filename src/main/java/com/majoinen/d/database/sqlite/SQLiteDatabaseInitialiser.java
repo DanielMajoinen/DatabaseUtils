@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.ResultSet;
-import java.util.Arrays;
 
 /**
  * Initialises a SQLite database and populates it with tables. If the
@@ -56,9 +54,7 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
     }
 
     /**
-     * Verify the database. If the database does not exist, create it. If the
-     * database fails verification for any reason, back up the database and
-     * create a new database.
+     * Verify the database. If the database does not exist, create it.
      *
      * @throws DBUtilsException If there was a database error when verifying a
      * table or connecting to the database; If the database config file is not
@@ -84,13 +80,18 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
     private void initDatabase() throws DBUtilsException {
         for (String tableName : properties.getTableNames()) {
             if (verifyTable(tableName)) {
-                logger.debug("Successfully verified table: " + tableName);
+                logger.info("[DBUtils] Successfully verified table: " +
+                  tableName);
             } else {
-                logger.debug("Failed verifying table: " + tableName);
-                if(initTable(tableName))
-                    logger.debug("Successfully added table: " + tableName);
-                if(initTable(tableName + INSERT_FILE_SUFFIX))
-                    logger.debug("Successfully inserted data into: "+tableName);
+                logger.info("[DBUtils] Failed verifying table: " + tableName);
+                if(initTable(tableName)) {
+                    logger.info("[DBUtils] Successfully added table: " +
+                      tableName);
+                }
+                if(initTable(tableName + INSERT_FILE_SUFFIX)) {
+                    logger.info("[DBUtils] Successfully inserted data into: " +
+                      tableName);
+                }
             }
         }
     }
@@ -109,10 +110,11 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
     private boolean verifyTable(String tableName) throws DBUtilsException {
         String query = getTableSQL(tableName, true);
         // Get current schema from database
-        ResultSet resultSet = databaseController.select(VERIFY_TABLE_QUERY,
-          Arrays.asList(tableName));
-        String sql = (String) databaseController.getObject(resultSet,
-          VERIFY_TABLE_COLUMN_LABEL, String.class, true);
+        String sql = databaseController
+          .prepareQuery(VERIFY_TABLE_QUERY)
+          .addParameters(tableName)
+          .executeAndMap(resultSet ->
+            resultSet.getString(VERIFY_TABLE_COLUMN_LABEL));
         // Compare table sql file to current schema and return
         if(sql == null) {
             return false;
@@ -143,10 +145,11 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
                 if (query.length() == 0)
                     throw new NullPointerException(
                       "resources"+filename+" contains empty query");
-                databaseController.insert(query, null);
             }
+            databaseController.prepareBatchQuery(queries).executeUpdate();
         } else {
-            logger.debug("Skipping resources"+filename+": File not found");
+            logger.info("[DBUtils] Skipping resources" + filename +
+              ": File not found");
             return false;
         }
         return true;
