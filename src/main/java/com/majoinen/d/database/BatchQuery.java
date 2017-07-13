@@ -35,10 +35,10 @@ public class BatchQuery extends Query {
     public BatchQuery prepareBatchQuery(String query) throws DBUtilsException {
         try {
             executeBatchUpdate();
-            dbUtilsConnection().getConnection().prepareStatement(query);
+            getDBUtilsConnection().getConnection().prepareStatement(query);
         } catch(DBUtilsException e) {
             rollbackConnection();
-            dbUtilsConnection().close();
+            getDBUtilsConnection().close();
             throw new DBUtilsException("Error executing batch update", e);
         } catch(SQLException e) {
             throw new DBUtilsException("Error preparing query", e);
@@ -96,7 +96,7 @@ public class BatchQuery extends Query {
             throw new DBUtilsException("Error executing batch update", e);
         } finally {
             commitConnection();
-            dbUtilsConnection().close();
+            getDBUtilsConnection().close();
         }
     }
 
@@ -108,7 +108,7 @@ public class BatchQuery extends Query {
      */
     private void executeBatchUpdate() throws DBUtilsException {
         try {
-            affectedRows += dbUtilsConnection().getStatement().executeUpdate();
+            affectedRows += getDBUtilsConnection().getStatement().executeUpdate();
         } catch(SQLException e) {
             throw new InsertException(e);
         }
@@ -122,7 +122,7 @@ public class BatchQuery extends Query {
      */
     private void commitConnection() throws DBUtilsException {
         try {
-            dbUtilsConnection().getConnection().commit();
+            getDBUtilsConnection().getConnection().commit();
         } catch(SQLException e) {
             throw new DBUtilsException("Error committing connection", e);
         }
@@ -136,7 +136,7 @@ public class BatchQuery extends Query {
      */
     private void rollbackConnection() throws DBUtilsException {
         try {
-            dbUtilsConnection().getConnection().rollback();
+            getDBUtilsConnection().getConnection().rollback();
         } catch(SQLException e) {
             throw new DBUtilsException("Error rolling back connection", e);
         }
