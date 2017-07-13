@@ -23,23 +23,10 @@ public class SQLiteDatabaseController implements DatabaseController,
       LogManager.getLogger(SQLiteDatabaseController.class);
 
     private SQLiteDatabaseProperties properties;
-    private DBUtilsConnection connection;
 
     public SQLiteDatabaseController() throws DBUtilsException {
         this.properties = new SQLiteDatabaseProperties();
         new SQLiteDatabaseInitialiser(this, properties).init();
-    }
-
-    /**
-     * Getter for connection to ensure there is only a single instance at a
-     * given time.
-     * @return A DBUtilsConnection instance that is either currently open or
-     * created if required.
-     */
-    private DBUtilsConnection getConnection() {
-        if(connection == null)
-            connection = new DBUtilsConnection(this);
-        return connection;
     }
 
     /**
@@ -55,8 +42,9 @@ public class SQLiteDatabaseController implements DatabaseController,
     @Override
     public Query prepareQuery(String query) throws DBUtilsException {
         logger.debug("[DBUtils] Preparing single query");
-        getConnection().prepareStatement(query);
-        return new Query(getConnection());
+        DBUtilsConnection connection = new DBUtilsConnection(this);
+        connection.prepareStatement(query);
+        return new Query(connection);
     }
 
     /**
@@ -90,8 +78,9 @@ public class SQLiteDatabaseController implements DatabaseController,
     public BatchQuery prepareBatchQuery(String... queries) throws
       DBUtilsException {
         logger.debug("[DBUtils] Preparing batch queries");
-        getConnection().prepareStatement(queries[0]);
-        BatchQuery batchQuery = new BatchQuery(getConnection());
+        DBUtilsConnection connection = new DBUtilsConnection(this);
+        connection.prepareStatement(queries[0]);
+        BatchQuery batchQuery = new BatchQuery(connection);
         for (int i = 1; i < queries.length - 1; i++)
             batchQuery.prepareBatchQuery(queries[i]);
         return batchQuery;
@@ -105,7 +94,7 @@ public class SQLiteDatabaseController implements DatabaseController,
      * are any permission issues when accessing the file.
      */
     @Override
-    public Connection openConnection() throws DBUtilsException {
+    public synchronized Connection openConnection() throws DBUtilsException {
         logger.debug("[DBUtils] Opening connection to the database");
         try {
             return DriverManager.getConnection(
