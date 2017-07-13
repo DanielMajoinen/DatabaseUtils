@@ -32,7 +32,7 @@ public class DBUtilsConnection {
      * Getter for Connection.
      * @return The current connection.
      */
-    public Connection connection() {
+    public Connection getConnection() {
         return connection;
     }
 
@@ -40,7 +40,7 @@ public class DBUtilsConnection {
      * Getter for PreparedStatement.
      * @return The current PreparedStatement.
      */
-    public PreparedStatement statement() {
+    public PreparedStatement getStatement() {
         return statement;
     }
 

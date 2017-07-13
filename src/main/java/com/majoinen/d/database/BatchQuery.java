@@ -35,7 +35,7 @@ public class BatchQuery extends Query {
     public BatchQuery prepareBatchQuery(String query) throws DBUtilsException {
         try {
             executeBatchUpdate();
-            dbUtilsConnection().connection().prepareStatement(query);
+            dbUtilsConnection().getConnection().prepareStatement(query);
         } catch(DBUtilsException e) {
             rollbackConnection();
             dbUtilsConnection().close();
@@ -108,7 +108,7 @@ public class BatchQuery extends Query {
      */
     private void executeBatchUpdate() throws DBUtilsException {
         try {
-            affectedRows += dbUtilsConnection().statement().executeUpdate();
+            affectedRows += dbUtilsConnection().getStatement().executeUpdate();
         } catch(SQLException e) {
             throw new InsertException(e);
         }
@@ -122,7 +122,7 @@ public class BatchQuery extends Query {
      */
     private void commitConnection() throws DBUtilsException {
         try {
-            dbUtilsConnection().connection().commit();
+            dbUtilsConnection().getConnection().commit();
         } catch(SQLException e) {
             throw new DBUtilsException("Error committing connection", e);
         }
@@ -136,7 +136,7 @@ public class BatchQuery extends Query {
      */
     private void rollbackConnection() throws DBUtilsException {
         try {
-            dbUtilsConnection().connection().rollback();
+            dbUtilsConnection().getConnection().rollback();
         } catch(SQLException e) {
             throw new DBUtilsException("Error rolling back connection", e);
         }

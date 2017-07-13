@@ -40,7 +40,7 @@ public abstract class AbstractQuery {
      */
     public int executeUpdate() throws DBUtilsException {
         try {
-            return connection.statement().executeUpdate();
+            return connection.getStatement().executeUpdate();
         } catch(SQLException e) {
             throw new InsertException(e);
         } finally {
@@ -56,7 +56,7 @@ public abstract class AbstractQuery {
      */
     private ResultSet executeQuery() throws DBUtilsException {
         try {
-            return connection.statement().executeQuery();
+            return connection.getStatement().executeQuery();
         } catch(SQLException e) {
             throw new DBUtilsException("Error executing query", e);
         }
