@@ -13,6 +13,9 @@ import java.util.List;
  */
 public interface DatabaseController {
 
+    // TODO: Add javadoc comment
+    void init() throws DBUtilsException;
+
     /**
      * Prepare a provided single query for execution.
      *
