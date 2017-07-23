@@ -31,7 +31,8 @@ public abstract class DatabaseProperties {
      *
      * @param databaseName the database to get the type of.
      * @return the database type as a DatabaseType enum.
-     * @throws DBUtilsException
+     * @throws DBUtilsException if any IOException occurs accessing the database
+     * properties.
      */
     public static DatabaseType getDatabaseType(String databaseName)
       throws DBUtilsException {
