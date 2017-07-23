@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -20,28 +21,59 @@ public class DBUtilsConnection {
     private static final Logger logger =
       LogManager.getLogger(DBUtilsConnection.class);
 
-    private ConnectionProvider connectionProvider;
+    private DatabaseConnectionProvider connectionProvider;
     private Connection connection;
     private PreparedStatement statement;
 
-    public DBUtilsConnection(ConnectionProvider connectionProvider) {
+    public DBUtilsConnection(DatabaseConnectionProvider connectionProvider) {
         this.connectionProvider = connectionProvider;
     }
 
     /**
-     * Getter for Connection.
-     * @return The current connection.
+     * Getter for the current Connection. Used in unit tests.
+     *
+     * @return the Connection.
      */
-    public Connection getConnection() {
+    Connection getConnection() {
         return connection;
     }
 
     /**
-     * Getter for PreparedStatement.
-     * @return The current PreparedStatement.
+     * Getter for the current PreparedStatement. Used in unit tests.
+     *
+     * @return the PreparedStatement.
      */
-    public PreparedStatement getStatement() {
+    PreparedStatement getStatement() {
         return statement;
+    }
+
+    /**
+     * Executes a prepared query, used when inserting / altering the database.
+     *
+     * @return the amount of affected rows.
+     * @throws DBUtilsException if any SQLException occurs when executing the
+     * prepared statement.
+     */
+    public int executeUpdate() throws DBUtilsException {
+        try {
+            return statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DBUtilsException("[DBUtils] Error executing update", e);
+        }
+    }
+
+    /**
+     * Executes a query and provides the resulting values from the database.
+     *
+     * @return The queries results in the form of a ResultSet.
+     * @throws DBUtilsException If any SQLException occurs executing the query.
+     */
+    public ResultSet executeQuery() throws DBUtilsException {
+        try {
+            return statement.executeQuery();
+        } catch (SQLException e) {
+            throw new DBUtilsException("[DBUtils] Error executing query", e);
+        }
     }
 
     /**
@@ -60,7 +92,8 @@ public class DBUtilsConnection {
         try {
             connection.setAutoCommit(false);
         } catch(SQLException e) {
-            throw new DBUtilsException("Error disabling auto commit", e);
+            throw new DBUtilsException("[DBUtils] Error disabling auto commit",
+              e);
         }
         return true;
     }
@@ -68,19 +101,21 @@ public class DBUtilsConnection {
     /**
      * Prepare a statement for execution, using the provided query.
      *
-     * @param query The query to prepare the statement with.
+     * @param sql The query to prepare the statement with.
      * @return True if the statement is successfully prepared.
      * @throws DBUtilsException If any SQLException occurs when preparing the
      * statement.
      */
-    public boolean prepareStatement(String query) throws DBUtilsException {
-        if(query.length() == 0)
-            throw new DBUtilsException("Empty query");
+    public boolean prepareStatement(String sql) throws
+      DBUtilsException {
+        if(sql == null || sql.length() == 0)
+            throw new DBUtilsException("[DBUtils] Null or empty query");
         openConnection();
         try {
-            statement = connection.prepareStatement(query);
+            statement = connection.prepareStatement(sql);
         } catch(SQLException e) {
-            throw new DBUtilsException("Error preparing statement", e);
+            throw new DBUtilsException("[DBUtils] Error preparing statement",
+              e);
         }
         return true;
     }
@@ -92,8 +127,12 @@ public class DBUtilsConnection {
      * connection.
      */
     private void openConnection() throws DBUtilsException {
-        if(connection == null)
-            connection = connectionProvider.openConnection();
+        try {
+            if (connection == null || connection.isClosed())
+                connection = connectionProvider.openConnection();
+        } catch(SQLException e) {
+            throw new DBUtilsException("[DBUtils] Error opening connection", e);
+        }
     }
 
     /**
@@ -118,9 +157,9 @@ public class DBUtilsConnection {
     private boolean closeStatement() throws DBUtilsException {
         try {
             statement.close();
-            statement = null;
         } catch(SQLException e) {
-            throw new DBUtilsException("Error closing statement", e);
+            logger.error("[DBUtils] SQLException closing statement");
+            throw new DBUtilsException("[DBUtils] Error closing statement", e);
         }
         return true;
     }
@@ -135,10 +174,57 @@ public class DBUtilsConnection {
     private boolean closeConnection() throws DBUtilsException {
         try {
             connection.close();
-            connection = null;
         } catch(SQLException e) {
-            throw new DBUtilsException("Error closing connection", e);
+            logger.error("[DBUtils] SQLException closing connection");
+            throw new DBUtilsException("[DBUtils] Error closing connection", e);
         }
         return true;
+    }
+
+    /**
+     * Sets the value of the designated parameter using the given object.
+     *
+     * @param index the parameter index. Parameters start from 1.
+     * @param object the object containing the input parameter value.
+     * @throws DBUtilsException if any SQLException occurs when setting the
+     * designated parameter.
+     */
+    public void setObject(int index, Object object) throws DBUtilsException {
+        try {
+            statement.setObject(index, object);
+        } catch(SQLException e) {
+            logger.error("[DBUtils] SQLException setting object");
+            throw new DBUtilsException("[DBUtils] Error setting object", e);
+        }
+    }
+
+    /**
+     * Commit a connection, providing exception handling.
+     *
+     * @throws DBUtilsException If any SQLException occurs committing the
+     * connection.
+     */
+    protected void commit() throws DBUtilsException {
+        try {
+            connection.commit();
+        } catch(SQLException e) {
+            throw new DBUtilsException(
+              "[DBUtils] Error committing connection", e);
+        }
+    }
+
+    /**
+     * Rollback the connection, providing exception handling.
+     *
+     * @throws DBUtilsException If any SQLException occurs rolling back the
+     * connection.
+     */
+    protected void rollback() throws DBUtilsException {
+        try {
+            connection.rollback();
+        } catch(SQLException e) {
+            throw new DBUtilsException("[DBUtils] Error rolling back connection",
+              e);
+        }
     }
 }
