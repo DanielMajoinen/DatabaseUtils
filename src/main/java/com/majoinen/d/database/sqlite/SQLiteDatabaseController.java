@@ -16,17 +16,18 @@ import java.util.List;
  * @author Daniel Majoinen
  * @version 1.0, 5/7/17
  */
-public class SQLiteDatabaseController implements DatabaseController,
-    ConnectionProvider {
+public class SQLiteDatabaseController implements DatabaseController {
 
     private static final Logger logger =
       LogManager.getLogger(SQLiteDatabaseController.class);
 
+    private DatabaseConnectionProvider provider;
 
     public SQLiteDatabaseController(String databaseName) throws
       DBUtilsException {
         SQLiteDatabaseProperties properties =
           new SQLiteDatabaseProperties(databaseName);
+        this.provider = new SQLiteDatabaseConnectionProvider(properties);
         new SQLiteDatabaseInitialiser(this, properties).init();
     }
 
@@ -43,9 +44,7 @@ public class SQLiteDatabaseController implements DatabaseController,
     @Override
     public Query prepareQuery(String query) throws DBUtilsException {
         logger.debug("[DBUtils] Preparing single query");
-        DBUtilsConnection connection = new DBUtilsConnection(this);
-        connection.prepareStatement(query);
-        return new Query(connection);
+        return new Query(new DBUtilsConnection(provider), query);
     }
 
     /**
@@ -79,32 +78,45 @@ public class SQLiteDatabaseController implements DatabaseController,
     public BatchQuery prepareBatchQuery(String... queries) throws
       DBUtilsException {
         logger.debug("[DBUtils] Preparing batch queries");
-        DBUtilsConnection connection = new DBUtilsConnection(this);
-        connection.prepareStatement(queries[0]);
-        BatchQuery batchQuery = new BatchQuery(connection);
+        DBUtilsConnection connection = new DBUtilsConnection(provider);
+        BatchQuery batchQuery = new BatchQuery(connection, queries[0]);
         for (int i = 1; i < queries.length - 1; i++)
             batchQuery.prepareBatchQuery(queries[i]);
         return batchQuery;
     }
 
-    /**
-     * Opens a connection to the database.
-     *
-     * @throws DBUtilsException If a database access error occurs. Ensure URL is
-     * correct; if the database config file is not found or if there
-     * are any permission issues when accessing the file.
-     */
-    @Override
-    public synchronized Connection openConnection() throws DBUtilsException {
-        logger.debug("[DBUtils] Opening connection to the database");
-        try {
-            return DriverManager.getConnection(
-              SQLiteDatabaseProperties.DATABASE_TYPE_PREFIX +
-                SQLiteDatabaseProperties.DATABASE_DIRECTORY +
-                properties.getDatabaseName() +
-                SQLiteDatabaseProperties.DATABASE_FILE_EXTENSION);
-        } catch (SQLException e) {
-            throw new DBUtilsException("Error opening connection", e);
+    private static class SQLiteDatabaseConnectionProvider implements DatabaseConnectionProvider {
+
+        private static final Logger logger =
+          LogManager.getLogger(SQLiteDatabaseConnectionProvider.class);
+
+        private SQLiteDatabaseProperties properties;
+
+        SQLiteDatabaseConnectionProvider(SQLiteDatabaseProperties
+          properties) {
+            this.properties = properties;
+        }
+
+        /**
+         * Opens a connection to the database.
+         *
+         * @throws DBUtilsException If a database access error occurs; if the
+         * database config file is not found or if there are any permission
+         * issues when accessing the file.
+         */
+        @Override
+        public synchronized Connection openConnection() throws
+          DBUtilsException {
+            logger.debug("[DBUtils] Opening connection to the database");
+            try {
+                return DriverManager.getConnection(
+                  SQLiteDatabaseProperties.DATABASE_TYPE_PREFIX +
+                    properties.getDatabaseDirectory() + "/" +
+                    properties.getDatabaseName() + "." +
+                    properties.getDatabaseFileExtension());
+            } catch (SQLException e) {
+                throw new DBUtilsException("Error opening connection", e);
+            }
         }
     }
 }
