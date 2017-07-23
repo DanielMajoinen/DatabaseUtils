@@ -63,8 +63,9 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      */
     @Override
     public void init() throws DBUtilsException {
-        File directory = new File(SQLiteDatabaseProperties.DATABASE_DIRECTORY);
-        directory.mkdirs();
+        File directory = new File(properties.getDatabaseDirectory());
+        if(!directory.exists() && !directory.mkdirs())
+            throw new DBUtilsException("[DBUtils] Error creating db directory");
         initDatabase();
     }
 
