@@ -51,7 +51,8 @@ public final class ResultSetHandler {
     private static void closeResultSet(ResultSet resultSet) throws
       DBUtilsException {
         try {
-            resultSet.close();
+            if(resultSet != null && !resultSet.isClosed())
+                resultSet.close();
         } catch(SQLException e) {
             throw new DBUtilsException("[DBUtils] Error closing ResultSet", e);
         }
