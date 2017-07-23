@@ -34,7 +34,7 @@ public class DBUtilsConnection {
      *
      * @return the Connection.
      */
-    Connection getConnection() {
+    final Connection getConnection() {
         return connection;
     }
 
@@ -43,7 +43,7 @@ public class DBUtilsConnection {
      *
      * @return the PreparedStatement.
      */
-    PreparedStatement getStatement() {
+    final PreparedStatement getStatement() {
         return statement;
     }
 
@@ -223,8 +223,8 @@ public class DBUtilsConnection {
         try {
             connection.rollback();
         } catch(SQLException e) {
-            throw new DBUtilsException("[DBUtils] Error rolling back connection",
-              e);
+            throw new DBUtilsException(
+              "[DBUtils] Error rolling back connection", e);
         }
     }
 }
