@@ -1,4 +1,4 @@
-package com.majoinen.d.database;
+package com.majoinen.d.database.util;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

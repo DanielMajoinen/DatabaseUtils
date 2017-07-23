@@ -2,6 +2,7 @@ package com.majoinen.d.database;
 
 import com.majoinen.d.database.exception.DBUtilsException;
 import com.majoinen.d.database.exception.InsertException;
+import com.majoinen.d.database.util.ObjectMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
