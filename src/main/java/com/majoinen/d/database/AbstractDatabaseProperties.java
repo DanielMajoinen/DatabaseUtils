@@ -1,5 +1,7 @@
 package com.majoinen.d.database;
 
+import java.util.Properties;
+
 /**
  * Abstract properties class which provides required keys and parameters for
  * any implementation type.
@@ -22,5 +24,27 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties {
     protected static final String TABLES_DELIMITER_KEY =
       "table.names.delimiter";
 
+    // Message when required key is missing in config
+    private static final String MISSING_KEY_MSG =
+      "DatabaseUtils missing property key: ";
+
+    // Message when value is missing in config
+    private static final String MISSING_VALUE_MSG =
+      "DatabaseUtils missing property value: ";
+
     protected AbstractDatabaseProperties() {}
+
+    /*
+     * Gets the value of the desired key from the supplied properties object
+     * providing exception handling.
+     */
+    protected String getProperty(Properties properties, String key) {
+        String value = properties.getProperty(key);
+        if(value == null) {
+            throw new NullPointerException(MISSING_KEY_MSG + key);
+        } else if(value.length() == 0) {
+            throw new NullPointerException(MISSING_VALUE_MSG + key);
+        }
+        return value;
+    }
 }
