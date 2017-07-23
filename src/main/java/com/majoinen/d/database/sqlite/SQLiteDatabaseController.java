@@ -22,10 +22,11 @@ public class SQLiteDatabaseController implements DatabaseController,
     private static final Logger logger =
       LogManager.getLogger(SQLiteDatabaseController.class);
 
-    private SQLiteDatabaseProperties properties;
 
-    public SQLiteDatabaseController() throws DBUtilsException {
-        this.properties = new SQLiteDatabaseProperties();
+    public SQLiteDatabaseController(String databaseName) throws
+      DBUtilsException {
+        SQLiteDatabaseProperties properties =
+          new SQLiteDatabaseProperties(databaseName);
         new SQLiteDatabaseInitialiser(this, properties).init();
     }
 
