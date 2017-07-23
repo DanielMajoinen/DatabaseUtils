@@ -5,14 +5,17 @@ Currently there is only support for SQLite, but other JDBC connections are plann
 
 Configuration:
 ---
-Each database connection will require its own `.properties` file which is named according to the database name. These property files are required to be placed in the `resources/config/` directory. 
+Each database connection will require its own `.properties` file which is named the same as the database. These property files are required to be placed in the `resources/config/` directory. Each database type requires 
+its own specific properties, but all <strong>MUST</strong> define the database 
+type.
 
-Example: 
+Connect to database `dbutils` example: 
 
     resources/config/dbutils.properties
 
 Sample SQLite properties file:
 
+    database.type=SQLite
     database.directory=data
     database.file.extension=db
     
@@ -22,30 +25,38 @@ Sample SQLite properties file:
 Database Initialisation:
 ---
 
+To automatically create and verify tables the database must be initialised:
+
+    databaseController.init();
+
 ###### Table Creation & Verification
 For each table defined in the configuration, a corresponding sql file must be placed in `resources/sql/`, with the query to create the table as its contents. This will be used on instantiation of the database controller where each table will be verified against the appropriate sql file. If the table does not exist, the contents will be used to create the table. If the table does exist but fails verification an exception will be thrown.
 
-Example:
+Example: `resources/sql/user.sql`
 
-    resources/sql/user.sql
-
+    CREATE TABLE `user`
+        (`id` int,
+         `name` char[15] NOT NULL,
+         `password` char[36] NOT NULL,
+         PRIMARY KEY(`id`))
 
 ###### Insert On Creation
-Optionally, an insert sql file can also be included for each table. This should contain insert queries for the corresponding table and will ONLY be run after creation of the table. The insert file must be named after the table with `-insert` appended to its name.
+An insert sql file can optionally be included for each table. This should contain insert queries for the corresponding table and will <strong>ONLY</strong> be run after creation of the table. The insert file must be named after the table with `-insert` appended to its name.
 
 Example:
 
     resources/sql/user-insert.sql
 
-NOTE: Insert queries should be separated with a `;`
+<strong>NOTE:</strong> Insert queries should be separated with a `;`
+
+    INSERT INTO `user` ('name', 'password') VALUES ('user1', 'pass');
+    INSERT INTO `user` ('name', 'password') VALUES ('user2', 'pass')
 
 Usage:
 ---
 #### Instantiate a Database Controller:
 
-    // Available types: SQLITE
-    DatabaseController databaseController = DatabaseControllerFactory.
-      getController(DatabaseType.TYPE, DATABASE_NAME);
+    DatabaseController databaseController = DatabaseControllerFactory.getController(DATABASE_NAME);
 
 #### INSERT:
 
@@ -53,7 +64,7 @@ Usage:
   2. Define optional parameters
   3. Execute update
 
-NOTE: Parameters are defined as a `String` key and `Object` value where the key is a substring of the query.
+<strong>NOTE:</strong> Parameters are defined as a `String` key and `Object` value where the key is a substring of the query.
 
      private static final String EXAMPLE_INSERT_QUERY = 
        "INSERT INTO `user` ('email', 'password') VALUES (:email, :password)";
@@ -73,7 +84,7 @@ NOTE: Parameters are defined as a `String` key and `Object` value where the key 
   3. Repeat the process for desired amount of queries
   3. Execute update
   
-NOTE: Parameters must be defined after each query they are intended for and before preparing the next query.
+<strong>NOTE:</strong> Parameters must be defined after each query they are intended for and before preparing the next query.
 
 
      private static final String EXAMPLE_BATCH_INSERT_QUERY_1 = 
