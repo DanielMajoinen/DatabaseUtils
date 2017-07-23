@@ -11,6 +11,6 @@ import java.sql.Connection;
  * @version 1.0, 11/7/17
  */
 @FunctionalInterface
-public interface ConnectionProvider {
+public interface DatabaseConnectionProvider {
     Connection openConnection() throws DBUtilsException;
 }
