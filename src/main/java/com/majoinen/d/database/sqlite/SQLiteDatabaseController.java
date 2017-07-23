@@ -18,11 +18,18 @@ public class SQLiteDatabaseController extends SQLDatabaseController {
 
     private final String databaseName;
 
-    public SQLiteDatabaseController(String databaseName) throws DBUtilsException {
+    public SQLiteDatabaseController(String databaseName)
+      throws DBUtilsException {
         super(databaseName);
         this.databaseName = databaseName;
     }
 
+    /**
+     * Initialise, verify and if needed create any missing tables.
+     *
+     * @throws DBUtilsException if any IOException occurs when accessing
+     * database properties or SQLException when verifying or creating tables.
+     */
     @Override
     public void init() throws DBUtilsException {
         logger.info("[DBUtils] Initialising database");

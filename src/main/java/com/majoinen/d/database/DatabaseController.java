@@ -13,7 +13,12 @@ import java.util.List;
  */
 public interface DatabaseController {
 
-    // TODO: Add javadoc comment
+    /**
+     * Initialise, verify and if needed create any missing tables.
+     *
+     * @throws DBUtilsException if any IOException occurs when accessing
+     * database properties or SQLException when verifying or creating tables.
+     */
     void init() throws DBUtilsException;
 
     /**
