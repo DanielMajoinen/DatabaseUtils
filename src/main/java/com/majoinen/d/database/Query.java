@@ -29,19 +29,39 @@ public class Query {
         this.parameters = new HashMap<>();
     }
 
+    /**
+     * When converting this object to a string, return the sql query.
+     *
+     * @return the sql query.
+     */
     @Override
     public String toString() {
         return sql;
     }
 
+    /**
+     * Getter for the sql query.
+     *
+     * @return the sql query.
+     */
     public String getSql() {
         return sql;
     }
 
+    /**
+     * Setter for sql, used by subclasses.
+     *
+     * @param sql the new sql query.
+     */
     public void setSql(String sql) {
         this.sql = sql;
     }
 
+    /**
+     * Getter for the DBUtilsConnection.
+     *
+     * @return the DBUtilsConnection associated with this query.
+     */
     public DBUtilsConnection getDBUtilsConnection() {
         return connection;
     }
@@ -103,7 +123,12 @@ public class Query {
         return connection.executeQuery();
     }
 
-    /* Handles flow of preparing a statement with parameters */
+    /**
+     * Handles flow of preparing a statement with parameters.
+     *
+     * @throws DBUtilsException If any SQLException occurs while preparing the
+     * statement or setting parameters.
+     */
     protected void prepareStatementWithParameters() throws DBUtilsException {
         connection.prepareStatement(SQLParameterParser
           .removeParameterKeys(sql, parameters));
