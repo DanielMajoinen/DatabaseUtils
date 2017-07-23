@@ -39,7 +39,7 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
 
     // SQL command used when verifying a table in the database
     private static final String VERIFY_TABLE_QUERY =
-      "SELECT `sql` FROM `sqlite_master` WHERE `name` = ?";
+      "SELECT `sql` FROM `sqlite_master` WHERE `name` = :tablename";
 
     // Column label to check when verifying a table in the database
     private static final String VERIFY_TABLE_COLUMN_LABEL = "sql";
@@ -112,7 +112,7 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
         // Get current schema from database
         String sql = databaseController
           .prepareQuery(VERIFY_TABLE_QUERY)
-          .addParameters(tableName)
+          .setParameter(":tablename", tableName)
           .executeAndMap(resultSet ->
             resultSet.getString(VERIFY_TABLE_COLUMN_LABEL));
         // Compare table sql file to current schema and return
@@ -136,9 +136,9 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      */
     private boolean initTable(String tableName) throws DBUtilsException {
         String file = getTableSQL(tableName, false);
-        String filename = SQL_RESOURCE_DIR.
-          concat(tableName).
-          concat(SQL_FILE_EXTENSION);
+        String filename = SQL_RESOURCE_DIR
+          .concat(tableName)
+          .concat(SQL_FILE_EXTENSION);
         if(file != null) {
             String[] queries = file.split(QUERY_DELIMITER);
             for (String query : queries) {
@@ -169,9 +169,9 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      */
     private String getTableSQL(String tableName, boolean required) throws
       DBUtilsException {
-        String filename = SQL_RESOURCE_DIR.
-          concat(tableName).
-          concat(SQL_FILE_EXTENSION);
+        String filename = SQL_RESOURCE_DIR
+          .concat(tableName)
+          .concat(SQL_FILE_EXTENSION);
         URL url = getClass().getResource(filename);
         if(url == null && required)
             throw new NullPointerException("resources/"+filename+" is missing");
