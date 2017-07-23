@@ -10,16 +10,17 @@ import java.util.Map;
  * @author Daniel Majoinen
  * @version 1.0, 22/7/17
  */
-public class SQLParameterParser {
+public final class SQLParameterParser {
 
     private SQLParameterParser() { }
 
     /* Replace occurrences of all parameter keys with a ? */
     public static String removeParameterKeys(String sql, Map<String, Object>
       parameters) {
+        String s = sql;
         for (String key : parameters.keySet())
-            sql = sql.replaceAll(key, "?");
-        return sql;
+            s = s.replaceAll(key, "?");
+        return s;
     }
 
     /* Get a list of all parameter keys in the order they appear */
