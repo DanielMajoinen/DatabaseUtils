@@ -85,7 +85,12 @@ public class SQLiteDatabaseController implements DatabaseController {
         return batchQuery;
     }
 
-    private static class SQLiteDatabaseConnectionProvider implements DatabaseConnectionProvider {
+    /**
+     * Nested DatabaseConnectionProvider concrete class providing connection
+     * to the SQLite database.
+     */
+    private static class SQLiteDatabaseConnectionProvider implements
+      DatabaseConnectionProvider {
 
         private static final Logger logger =
           LogManager.getLogger(SQLiteDatabaseConnectionProvider.class);
