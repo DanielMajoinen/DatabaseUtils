@@ -11,7 +11,7 @@ import com.majoinen.d.database.util.PropertiesHandler;
  * @author Daniel Majoinen
  * @version 1.0, 5/7/17
  */
-public class SQLiteDatabaseProperties extends DatabaseProperties {
+public final class SQLiteDatabaseProperties extends DatabaseProperties {
 
     // The key for where to place the database if it is file based
     private static final String DATABASE_DIRECTORY_KEY = "database.directory";

@@ -10,7 +10,7 @@ import java.util.Map;
  * @author Daniel Majoinen
  * @version 1.0, 23/7/17
  */
-public class DatabaseConnectionProviderFactory {
+public final class DatabaseConnectionProviderFactory {
 
     private static Map<String, DatabaseConnectionProvider> providers;
 

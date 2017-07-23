@@ -13,7 +13,7 @@ import java.util.Properties;
  * @author Daniel Majoinen
  * @version 1.0, 23/7/17
  */
-public class PropertiesHandler {
+public final class PropertiesHandler {
 
     // The config resource folder
     protected static final String CONFIG_RESOURCE_DIR = "/config/";
