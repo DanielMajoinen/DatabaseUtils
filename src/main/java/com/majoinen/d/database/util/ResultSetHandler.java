@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handle everything ResultSet related.
+ * Utility class to handle everything ResultSet related.
  *
  * @author Daniel Majoinen
  * @version 1.0, 22/7/17
  */
-public class ResultSetHandler {
+public final class ResultSetHandler {
 
     private ResultSetHandler() { }
 
