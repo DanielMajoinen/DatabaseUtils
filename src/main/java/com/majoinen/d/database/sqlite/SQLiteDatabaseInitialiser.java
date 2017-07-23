@@ -45,12 +45,9 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
     private static final String VERIFY_TABLE_COLUMN_LABEL = "sql";
 
     private SQLiteDatabaseController databaseController;
-    private SQLiteDatabaseProperties properties;
 
-    SQLiteDatabaseInitialiser(SQLiteDatabaseController controller,
-      SQLiteDatabaseProperties properties) {
+    SQLiteDatabaseInitialiser(SQLiteDatabaseController controller) {
         this.databaseController = controller;
-        this.properties = properties;
     }
 
     /**
@@ -62,11 +59,12 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * file.
      */
     @Override
-    public void init() throws DBUtilsException {
-        File directory = new File(properties.getDatabaseDirectory());
+    public void init(String databaseName) throws DBUtilsException {
+        File directory = new File(SQLiteDatabaseProperties
+          .getDatabaseDirectory(databaseName));
         if(!directory.exists() && !directory.mkdirs())
             throw new DBUtilsException("[DBUtils] Error creating db directory");
-        initDatabase();
+        initDatabase(databaseName);
     }
 
     /**
@@ -78,8 +76,9 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * found or if there are any permission issues when accessing the config
      * file.
      */
-    private void initDatabase() throws DBUtilsException {
-        for (String tableName : properties.getTableNames()) {
+    private void initDatabase(String databaseName) throws DBUtilsException {
+        for (String tableName : SQLiteDatabaseProperties.getTableNames(
+          databaseName)) {
             if (verifyTable(tableName)) {
                 logger.info("[DBUtils] Successfully verified table: " +
                   tableName);
@@ -145,7 +144,7 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
             for (String query : queries) {
                 if (query.length() == 0)
                     throw new NullPointerException(
-                      "resources"+filename+" contains empty query");
+                      "[DBUtils] resources"+filename+" contains empty query");
             }
             databaseController.prepareBatchQuery(queries).executeUpdate();
         } else {

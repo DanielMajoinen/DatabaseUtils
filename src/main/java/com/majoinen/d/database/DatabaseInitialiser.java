@@ -21,5 +21,5 @@ public interface DatabaseInitialiser {
      * found or if there are any permission issues when accessing the config
      * file.
      */
-    void init() throws DBUtilsException;
+    void init(String databaseName) throws DBUtilsException;
 }
