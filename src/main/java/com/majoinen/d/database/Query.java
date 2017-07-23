@@ -1,13 +1,14 @@
 package com.majoinen.d.database;
 
 import com.majoinen.d.database.exception.DBUtilsException;
-import com.majoinen.d.database.exception.InsertException;
 import com.majoinen.d.database.util.ObjectMapper;
+import com.majoinen.d.database.util.ResultSetHandler;
+import com.majoinen.d.database.util.SQLParameterParser;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Adds ability to add parameters to a query, execute an update or execute
@@ -18,76 +19,58 @@ import java.util.List;
  */
 public class Query {
 
-    private DBUtilsConnection connection;
+    private final DBUtilsConnection connection;
+    private String sql;
+    private Map<String, Object> parameters;
 
-    public Query(DBUtilsConnection connection) {
+    public Query(DBUtilsConnection connection, String sql) {
         this.connection = connection;
+        this.sql = sql;
+        this.parameters = new HashMap<>();
     }
 
-    protected DBUtilsConnection getDBUtilsConnection() {
+    @Override
+    public String toString() {
+        return sql;
+    }
+
+    public String getSql() {
+        return sql;
+    }
+
+    public void setSql(String sql) {
+        this.sql = sql;
+    }
+
+    public DBUtilsConnection getDBUtilsConnection() {
         return connection;
     }
 
-    /**
-     * Add an unknown amount of parameters to the query.
-     *
-     * @param parameters The parameters to add.
-     * @param <T> The type of the parameters.
-     * @return The query object with parameters applied.
-     * @throws DBUtilsException If any SQLException occurs while adding
-     * parameters.
-     */
-    public <T> Query addParameters(T... parameters) throws DBUtilsException {
-        setParameters(parameters);
+    /* Set a parameter by providing its substring in the sql and its value */
+    public <T> Query setParameter(String key, T value) throws
+      DBUtilsException {
+        parameters.put(key, value);
+        return this;
+    }
+
+    // TODO: Implement encrypted parameter
+    public <T> Query setEncryptedParameter(String key, T value) throws
+      DBUtilsException {
+        parameters.put(key, value);
         return this;
     }
 
     /**
-     * Add a list of parameters to the query.
+     * Execute an update query, returning the value of affected rows.
      *
-     * @param parameters The parameter list to add.
-     * @param <T> The type of the parameters.
-     * @return The query object with parameters applied.
-     * @throws DBUtilsException If any SQLException occurs while adding
-     * parameters.
-     */
-    public <T> Query addParameters(List<T> parameters) throws DBUtilsException {
-        setParameters(parameters.toArray());
-        return this;
-    }
-
-    /**
-     * Method which actually sets the parameters in the query, used by all
-     * addParameters methods.
-     *
-     * @param parameters The parameter list to add.
-     * @param <T> The type of the parameters.
-     * @throws DBUtilsException If any SQLException occurs while adding
-     * parameters.
-     */
-    protected <T> void setParameters(T[] parameters) throws DBUtilsException {
-        try {
-            int i = 0;
-            for (T parameter : parameters) {
-                connection.getStatement().setObject(++i, parameter);
-            }
-        } catch(SQLException e) {
-            throw new DBUtilsException("Error adding parameter to query", e);
-        }
-    }
-
-    /**
-     * Execute an update query.
-     *
-     * @return The amount of affected rows in the database.
+     * @return The amount of affected rows caused by the query.
      * @throws DBUtilsException If any SQLException occurs during the
      * execution of the query.
      */
     public int executeUpdate() throws DBUtilsException {
+        prepareStatementWithParameters();
         try {
-            return connection.getStatement().executeUpdate();
-        } catch(SQLException e) {
-            throw new InsertException(e);
+            return connection.executeUpdate();
         } finally {
             connection.close();
         }
@@ -100,11 +83,31 @@ public class Query {
      * @throws DBUtilsException If any SQLException occurs executing the query.
      */
     private ResultSet executeQuery() throws DBUtilsException {
-        try {
-            return connection.getStatement().executeQuery();
-        } catch(SQLException e) {
-            throw new DBUtilsException("Error executing query", e);
-        }
+        prepareStatementWithParameters();
+        return connection.executeQuery();
+    }
+
+    /* Handles flow of preparing a statement with parameters */
+    protected void prepareStatementWithParameters() throws DBUtilsException {
+        connection.prepareStatement(SQLParameterParser
+          .removeParameterKeys(sql, parameters));
+        if(!parameters.isEmpty())
+            setParameters(SQLParameterParser.getParameterKeys(sql, parameters));
+    }
+
+    /**
+     * Method which actually sets the parameters in the query, used by all
+     * addParameters methods.
+     *
+     * @throws DBUtilsException If any SQLException occurs while adding
+     * parameters.
+     */
+    protected boolean setParameters(List<String> parameterKeys) throws
+      DBUtilsException {
+        int i = 1;
+        for (String parameter : parameterKeys)
+            connection.setObject(i++, parameters.get(parameter));
+        return true;
     }
 
     /**
@@ -116,13 +119,8 @@ public class Query {
      * query or mapping the object.
      */
     public <T> T executeAndMap(ObjectMapper<T> mapper) throws DBUtilsException {
-        ResultSet resultSet = executeQuery();
         try {
-            if(resultSet == null || resultSet.isClosed())
-                return null;
-            return mapper.map(resultSet);
-        } catch(SQLException e) {
-            throw new DBUtilsException("Error mapping results to object", e);
+            return ResultSetHandler.handle(executeQuery(), mapper);
         } finally {
             connection.close();
         }
@@ -139,18 +137,10 @@ public class Query {
      */
     public <T> List<T> executeAndMapAll(ObjectMapper<T> mapper) throws
       DBUtilsException {
-        ResultSet resultSet = executeQuery();
-        List<T> list = new ArrayList<>();
         try {
-            if(resultSet == null || resultSet.isClosed())
-                return new ArrayList<>();
-            while(resultSet.next())
-                list.add(mapper.map(resultSet));
-        } catch(SQLException e) {
-            throw new DBUtilsException("Error mapping results to list", e);
+            return ResultSetHandler.handleAll(executeQuery(), mapper);
         } finally {
             connection.close();
         }
-        return list;
     }
 }
