@@ -14,11 +14,11 @@ public final class DatabaseControllerFactory {
 
     private DatabaseControllerFactory() { }
 
-    public static DatabaseController getController(DatabaseType type)
-      throws DBUtilsException {
+    public static DatabaseController getController(DatabaseType type, String
+      databaseName) throws DBUtilsException {
         DatabaseController controller = null;
         if(type.equals(DatabaseType.SQLITE))
-            controller = new SQLiteDatabaseController();
+            controller = new SQLiteDatabaseController(databaseName);
         return controller;
     }
 }
