@@ -20,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    compile     "commons-io:commons-io:2.5"                     // commons-io
     compile     "com.google.guava:guava:22.0"                   // Guava
     compile     "org.apache.logging.log4j:log4j-api:2.8.2"      // log4j-api
     compile     "org.apache.logging.log4j:log4j-core:2.8.2"     // log4j-core
