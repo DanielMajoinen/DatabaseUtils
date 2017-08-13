@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +46,6 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
     private static final String VERIFY_TABLE_COLUMN_LABEL = "sql";
 
     private static Map<SQLiteDatabaseController, SQLiteDatabaseInitialiser> map;
-
     private SQLiteDatabaseController databaseController;
 
     private SQLiteDatabaseInitialiser(SQLiteDatabaseController controller) {
@@ -183,17 +183,25 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * @throws DBUtilsException If there is any issue accessing the tables .sql
      * file.
      */
-    private String getTableSQL(String tableName, boolean required) throws
-      DBUtilsException {
+    String getTableSQL(String tableName, boolean required)
+      throws DBUtilsException {
         String filename = SQL_RESOURCE_DIR
           .concat(tableName)
           .concat(SQL_FILE_EXTENSION);
-        File file = new File(getClass().getResource(filename).toExternalForm());
-        if(!file.exists() && required) {
-            logger.error("[DBUtils] sql file missing for table: "+tableName);
+
+        URL url = getClass().getResource(filename);
+        if(url == null && required) {
+            logger.error("[DBUtils] sql file missing for table: " + tableName);
             throw new NullPointerException("resources"+filename+" is missing");
-        } else if(!file.exists() || file.length() == 0)
+        } else if(url == null)
             return null;
+
+        File file = new File(url.getPath());
+        if(file.length() == 0) {
+            logger.debug("[DBUtils] resources"+filename+" is is empty");
+            return null;
+        }
+
         try {
             return FileUtils.readFileToString(file, "UTF-8");
         } catch(IOException e) {
