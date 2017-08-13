@@ -96,19 +96,13 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
         for (String tableName : SQLiteDatabaseProperties.getTableNames(
           configFilename)) {
             if (verifyTable(tableName)) {
-                logger.info("[DBUtils] Successfully verified table: " +
-                  tableName);
+                logger.info("[DBUtils] Verified table: " + tableName);
             } else {
-                logger.info("[DBUtils] Failed verifying table: " +
-                  tableName);
-                if(initTable(tableName)) {
-                    logger.info("[DBUtils] Successfully added table: " +
-                      tableName);
-                }
-                if(initTable(tableName + INSERT_FILE_SUFFIX)) {
-                    logger.info("[DBUtils] Successfully inserted data into: " +
-                      tableName);
-                }
+                logger.info("[DBUtils] Failed verifying table: " + tableName);
+                if(initTable(tableName))
+                    logger.info("[DBUtils] Added table: " + tableName);
+                if(initTable(tableName + INSERT_FILE_SUFFIX))
+                    logger.info("[DBUtils] Inserted data into: " + tableName);
             }
         }
     }
