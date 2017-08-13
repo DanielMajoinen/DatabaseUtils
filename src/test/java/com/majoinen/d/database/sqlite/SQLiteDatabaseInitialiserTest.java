@@ -1,7 +1,10 @@
 package com.majoinen.d.database.sqlite;
 
+import com.majoinen.d.database.BatchQuery;
 import com.majoinen.d.database.exception.DBUtilsException;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * @author Daniel Majoinen
@@ -26,13 +31,20 @@ import static org.junit.Assert.assertTrue;
 @PowerMockIgnore("javax.management.*")
 public class SQLiteDatabaseInitialiserTest {
 
+    private static final Logger logger =
+      LogManager.getLogger(SQLiteDatabaseInitialiserTest.class);
+
     @Mock private SQLiteDatabaseController databaseController;
+    @Mock private BatchQuery batchQuery;
 
     private SQLiteDatabaseInitialiser initialiser;
 
     @Before
     public void beforeEachTest() throws Exception {
         MockitoAnnotations.initMocks(this);
+
+        when(databaseController.prepareBatchQuery(anyList()))
+          .thenReturn(batchQuery);
 
         initialiser = SQLiteDatabaseInitialiser.getInstance(databaseController);
     }
@@ -75,5 +87,22 @@ public class SQLiteDatabaseInitialiserTest {
 
         assertTrue(expected.equals(initialiser.getTableSQL("test_table",
           true)));
+    }
+
+    @Test
+    public void initTableNullFile() throws Exception {
+        String tableName = "missing_file";
+        assertTrue(!initialiser.initTable(tableName));
+    }
+
+    @Test
+    public void initTableEmptyQuery() throws Exception {
+        assertTrue(!initialiser.initTable("test_empty_query"));
+    }
+
+    @Test
+    public void initTable() throws Exception {
+        when(batchQuery.executeUpdate()).thenReturn(1);
+        assertTrue(initialiser.initTable("test_table"));
     }
 }
