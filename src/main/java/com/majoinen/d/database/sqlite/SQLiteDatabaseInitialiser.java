@@ -10,7 +10,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -150,25 +152,26 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * table; if the database config file is not found or if there
      * are any permission issues when accessing the config file.
      */
-    private boolean initTable(String tableName) throws DBUtilsException {
+    boolean initTable(String tableName) throws DBUtilsException {
         String file = getTableSQL(tableName, false);
         String filename = SQL_RESOURCE_DIR
           .concat(tableName)
           .concat(SQL_FILE_EXTENSION);
         if(file != null) {
             String[] queries = file.split(QUERY_DELIMITER);
+            List<String> validQueries = new ArrayList<>();
             for (String query : queries) {
-                if (query.length() == 0)
-                    throw new NullPointerException(
-                      "[DBUtils] resources"+filename+" contains empty query");
+                if (query != null && query.length() != 0)
+                    validQueries.add(query);
             }
-            databaseController.prepareBatchQuery(queries).executeUpdate();
+            return !validQueries.isEmpty() && databaseController
+              .prepareBatchQuery(validQueries)
+              .executeUpdate() > 0;
         } else {
             logger.info("[DBUtils] Skipping resources" + filename +
               ": File not found");
             return false;
         }
-        return true;
     }
 
     /**
