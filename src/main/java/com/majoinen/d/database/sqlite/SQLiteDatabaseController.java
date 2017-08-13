@@ -38,7 +38,7 @@ public class SQLiteDatabaseController extends SQLDatabaseController {
     @Override
     public void init() throws DBUtilsException {
         logger.info("[DBUtils] Initialising database");
-        new SQLiteDatabaseInitialiser(this).init(configFilename);
+        SQLiteDatabaseInitialiser.getInstance(this).init(configFilename);
     }
 
     @Override

@@ -9,6 +9,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Initialises a SQLite database and populates it with tables. If the
@@ -42,10 +44,24 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
     // Column label to check when verifying a table in the database
     private static final String VERIFY_TABLE_COLUMN_LABEL = "sql";
 
+    private static Map<SQLiteDatabaseController, SQLiteDatabaseInitialiser> map;
+
     private SQLiteDatabaseController databaseController;
 
-    SQLiteDatabaseInitialiser(SQLiteDatabaseController controller) {
+    private SQLiteDatabaseInitialiser(SQLiteDatabaseController controller) {
         this.databaseController = controller;
+    }
+
+    static SQLiteDatabaseInitialiser getInstance
+      (SQLiteDatabaseController databaseController) {
+        if(map == null)
+            map = new HashMap<>();
+        else if(map.containsKey(databaseController))
+            return map.get(databaseController);
+        SQLiteDatabaseInitialiser initialiser =
+          new SQLiteDatabaseInitialiser(databaseController);
+        map.put(databaseController, initialiser);
+        return initialiser;
     }
 
     /**
