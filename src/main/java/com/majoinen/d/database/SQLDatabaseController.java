@@ -16,9 +16,11 @@ public abstract class SQLDatabaseController implements DatabaseController {
       LogManager.getLogger(SQLDatabaseController.class);
 
     private final String databaseName;
+    private final String configFilename;
 
-    public SQLDatabaseController(String databaseName) {
+    public SQLDatabaseController(String databaseName, String filename) {
         this.databaseName = databaseName;
+        this.configFilename = filename;
     }
 
     /**
@@ -35,7 +37,7 @@ public abstract class SQLDatabaseController implements DatabaseController {
     public Query prepareQuery(String query) throws DBUtilsException {
         logger.debug("[DBUtils] Preparing single query");
         return new Query(new DBUtilsConnection(DatabaseConnectionProviderFactory
-            .getConnectionProvider(databaseName)), query);
+            .getConnectionProvider(databaseName, configFilename)), query);
     }
 
     /**
@@ -70,7 +72,8 @@ public abstract class SQLDatabaseController implements DatabaseController {
       DBUtilsException {
         logger.debug("[DBUtils] Preparing batch queries");
         DBUtilsConnection connection = new DBUtilsConnection(
-          DatabaseConnectionProviderFactory.getConnectionProvider(databaseName));
+          DatabaseConnectionProviderFactory.getConnectionProvider(databaseName,
+            configFilename));
         BatchQuery batchQuery = new BatchQuery(connection, queries[0]);
         for (int i = 1; i < queries.length - 1; i++)
             batchQuery.prepareBatchQuery(queries[i]);

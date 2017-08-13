@@ -21,17 +21,29 @@ public final class DatabaseControllerFactory {
 
     public static DatabaseController getController(String databaseName)
       throws DBUtilsException {
+        return getController(databaseName, databaseName);
+    }
+
+    public static DatabaseController getController(String databaseName,
+      String filename) throws DBUtilsException {
+        DatabaseController controller = getIfExists(databaseName);
+        if(controller != null)
+            return controller;
+
+        DatabaseType type = DatabaseProperties.getDatabaseType(filename);
+        if(type.equals(DatabaseType.SQLITE))
+            controller = new SQLiteDatabaseController(databaseName, filename);
+
+        controllers.put(databaseName, controller);
+        return controller;
+
+    }
+
+    private static DatabaseController getIfExists(String databaseName) {
         if(controllers == null)
             controllers = new HashMap<>();
         else if(controllers.containsKey(databaseName))
             return controllers.get(databaseName);
-
-        DatabaseController controller = null;
-        DatabaseType type = DatabaseProperties.getDatabaseType(databaseName);
-        if(type.equals(DatabaseType.SQLITE))
-            controller = new SQLiteDatabaseController(databaseName);
-
-        controllers.put(databaseName, controller);
-        return controller;
+        return null;
     }
 }

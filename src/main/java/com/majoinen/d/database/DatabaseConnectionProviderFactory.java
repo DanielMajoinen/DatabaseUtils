@@ -17,18 +17,17 @@ public final class DatabaseConnectionProviderFactory {
     private DatabaseConnectionProviderFactory() { }
 
     public static DatabaseConnectionProvider getConnectionProvider(
-      String databaseName) throws DBUtilsException {
+      String databaseName, String filename) throws DBUtilsException {
         if(providers == null)
             providers = new HashMap<>();
         else if(providers.containsKey(databaseName))
             return providers.get(databaseName);
 
         DatabaseConnectionProvider provider = null;
-        DatabaseType type = DatabaseProperties.getDatabaseType(databaseName);
+        DatabaseType type = DatabaseProperties.getDatabaseType(filename);
 
-        if(type.equals(DatabaseType.SQLITE)) {
-            provider = new SQLiteConnectionProvider(databaseName);
-        }
+        if(type.equals(DatabaseType.SQLITE))
+            provider = new SQLiteConnectionProvider(databaseName, filename);
 
         providers.put(databaseName, provider);
         return provider;

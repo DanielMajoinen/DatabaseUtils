@@ -3,14 +3,12 @@ package com.majoinen.d.database.sqlite;
 import com.majoinen.d.database.DatabaseInitialiser;
 import com.majoinen.d.database.exception.DBUtilsException;
 import com.majoinen.d.database.exception.TableMismatchException;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * Initialises a SQLite database and populates it with tables. If the
@@ -59,12 +57,12 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * file.
      */
     @Override
-    public void init(String databaseName) throws DBUtilsException {
+    public void init(String configFilename) throws DBUtilsException {
         File directory = new File(SQLiteDatabaseProperties
-          .getDatabaseDirectory(databaseName));
+          .getDatabaseDirectory(configFilename));
         if(!directory.exists() && !directory.mkdirs())
             throw new DBUtilsException("[DBUtils] Error creating db directory");
-        initDatabase(databaseName);
+        initDatabase(configFilename);
     }
 
     /**
@@ -76,14 +74,15 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * found or if there are any permission issues when accessing the config
      * file.
      */
-    private void initDatabase(String databaseName) throws DBUtilsException {
+    private void initDatabase(String configFilename) throws DBUtilsException {
         for (String tableName : SQLiteDatabaseProperties.getTableNames(
-          databaseName)) {
+          configFilename)) {
             if (verifyTable(tableName)) {
                 logger.info("[DBUtils] Successfully verified table: " +
                   tableName);
             } else {
-                logger.info("[DBUtils] Failed verifying table: " + tableName);
+                logger.info("[DBUtils] Failed verifying table: " +
+                  tableName);
                 if(initTable(tableName)) {
                     logger.info("[DBUtils] Successfully added table: " +
                       tableName);
@@ -119,7 +118,8 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
         if(sql == null) {
             return false;
         } else if(!sql.equals(query)) {
-            throw new TableMismatchException("Incorrect schema: " + tableName);
+            throw new TableMismatchException("[DBUtils] Incorrect schema: " +
+              tableName);
         }
         return true;
     }
@@ -172,15 +172,16 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
         String filename = SQL_RESOURCE_DIR
           .concat(tableName)
           .concat(SQL_FILE_EXTENSION);
-        URL url = getClass().getResource(filename);
-        if(url == null && required)
-            throw new NullPointerException("resources/"+filename+" is missing");
-        else if(url == null)
+        File file = new File(getClass().getResource(filename).toExternalForm());
+        if(!file.exists() && required) {
+            logger.error("[DBUtils] sql file missing for table: "+tableName);
+            throw new NullPointerException("resources"+filename+" is missing");
+        } else if(!file.exists() || file.length() == 0)
             return null;
         try {
-            return new String(Files.readAllBytes(Paths.get(url.getPath())));
+            return FileUtils.readFileToString(file, "UTF-8");
         } catch(IOException e) {
-            throw new DBUtilsException(e);
+            throw new DBUtilsException("[DBUtils] Error reading "+filename, e);
         }
     }
 }

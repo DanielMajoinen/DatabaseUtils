@@ -22,9 +22,12 @@ public class SQLiteConnectionProvider implements DatabaseConnectionProvider {
       LogManager.getLogger(SQLiteDatabaseController.class);
 
     private String databaseName;
+    private String configFilename;
 
-    public SQLiteConnectionProvider(String databaseName) {
+    public SQLiteConnectionProvider(String databaseName,
+      String configFilename) {
         this.databaseName = databaseName;
+        this.configFilename = configFilename;
     }
 
     /**
@@ -40,9 +43,9 @@ public class SQLiteConnectionProvider implements DatabaseConnectionProvider {
         logger.debug("[DBUtils] Opening connection to the database");
         try {
             return DriverManager.getConnection(DATABASE_TYPE_PREFIX +
-              SQLiteDatabaseProperties.getDatabaseDirectory(databaseName) +
+              SQLiteDatabaseProperties.getDatabaseDirectory(configFilename) +
               "/" + databaseName + "." + SQLiteDatabaseProperties
-              .getDatabaseFileExtension(databaseName));
+              .getDatabaseFileExtension(configFilename));
         } catch (SQLException e) {
             throw new DBUtilsException("Error opening connection", e);
         }

@@ -27,17 +27,18 @@ public abstract class DatabaseProperties {
     protected DatabaseProperties() {}
 
     /**
-     * Get the database type defined in the database .properties file.
+     * Get the database type defined in the appropriate .properties file.
      *
-     * @param databaseName the database to get the type of.
+     * @param filename the filename of the .properties file to get the
+     * database type of.
      * @return the database type as a DatabaseType enum.
      * @throws DBUtilsException if any IOException occurs accessing the database
      * properties.
      */
-    public static DatabaseType getDatabaseType(String databaseName)
+    public static DatabaseType getDatabaseType(String filename)
       throws DBUtilsException {
         String databaseType =
-          PropertiesHandler.getProperty(databaseName, DATABASE_TYPE_KEY);
+          PropertiesHandler.getProperty(filename, DATABASE_TYPE_KEY);
         if("SQLITE".equalsIgnoreCase(databaseType))
             return DatabaseType.SQLITE;
         throw new NullPointerException("[DBUtils] Database type unknown");
@@ -53,9 +54,9 @@ public abstract class DatabaseProperties {
     public static List<String> getTableNames(String databaseName)
       throws DBUtilsException {
         String delimiter = PropertiesHandler
-          .getProperty(databaseName, TABLES_DELIMITER_KEY);
+          .getRequiredProperty(databaseName, TABLES_DELIMITER_KEY);
         String tables = PropertiesHandler
-          .getProperty(databaseName, TABLE_NAMES_KEY);
+          .getRequiredProperty(databaseName, TABLE_NAMES_KEY);
         return Arrays.asList(tables.split(delimiter));
     }
 }
