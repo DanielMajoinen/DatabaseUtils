@@ -79,4 +79,10 @@ public final class PropertiesHandler {
         }
         return value;
     }
+
+    public static void setProperty(String filename, String key, String value)
+      throws DBUtilsException {
+        Properties properties = getDatabaseProperties(filename);
+        properties.setProperty(key, value);
+    }
 }
