@@ -29,21 +29,21 @@ public final class PropertiesHandler {
     private static final String MISSING_VALUE_MSG =
       "DatabaseUtils missing property value: ";
 
-    // Cache properties mapped to database name
+    // Cache properties mapped to .properties filenames
     private static Map<String, Properties> propertiesMap;
 
     private PropertiesHandler() { }
 
-    private static Properties getDatabaseProperties(String databaseName)
+    private static Properties getDatabaseProperties(String filename)
       throws DBUtilsException {
         if(propertiesMap == null)
             propertiesMap = new HashMap<>();
-        else if(propertiesMap.containsKey(databaseName))
-            return propertiesMap.get(databaseName);
+        else if(propertiesMap.containsKey(filename))
+            return propertiesMap.get(filename);
 
         Properties properties = new Properties();
         InputStream inputStream = PropertiesHandler.class.getResourceAsStream(
-          CONFIG_RESOURCE_DIR + databaseName + PROPERTIES_FILE_EXTENSION);
+          CONFIG_RESOURCE_DIR + filename + PROPERTIES_FILE_EXTENSION);
         if (inputStream != null) {
             try {
                 properties.load(inputStream);
@@ -55,16 +55,22 @@ public final class PropertiesHandler {
         } else {
             throw new ConfigFileNotFoundException(
               "[DBUtils] DBUtils requires config file: resources" +
-                CONFIG_RESOURCE_DIR + databaseName + PROPERTIES_FILE_EXTENSION);
+                CONFIG_RESOURCE_DIR + filename + PROPERTIES_FILE_EXTENSION);
         }
 
-        propertiesMap.put(databaseName, properties);
+        propertiesMap.put(filename, properties);
         return properties;
     }
 
-    public static String getProperty(String databaseName, String key)
+    public static String getProperty(String filename, String key)
       throws DBUtilsException {
-        Properties properties = getDatabaseProperties(databaseName);
+        Properties properties = getDatabaseProperties(filename);
+        return properties.getProperty(key);
+    }
+
+    public static String getRequiredProperty(String filename, String key)
+      throws DBUtilsException {
+        Properties properties = getDatabaseProperties(filename);
         String value = properties.getProperty(key);
         if(value == null) {
             throw new NullPointerException(MISSING_KEY_MSG + key);
