@@ -40,4 +40,9 @@ public class SQLiteDatabaseController extends SQLDatabaseController {
         logger.info("[DBUtils] Initialising database");
         new SQLiteDatabaseInitialiser(this).init(configFilename);
     }
+
+    @Override
+    public void setProperty(String key, String value) throws DBUtilsException {
+        PropertiesHandler.setProperty(configFilename, key, value);
+    }
 }

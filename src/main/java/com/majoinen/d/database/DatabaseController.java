@@ -56,4 +56,6 @@ public interface DatabaseController {
      * statement or creating the BatchQuery.
      */
     BatchQuery prepareBatchQuery(List<String> queries) throws DBUtilsException;
+
+    void setProperty(String key, String value) throws DBUtilsException;
 }
