@@ -20,17 +20,25 @@ public final class SQLiteDatabaseProperties extends DatabaseProperties {
     private static final String DATABASE_FILE_EXTENSION_KEY =
       "database.file.extension";
 
+    private static final String DATABASE_ROOT_DIRECTORY_KEY =
+      "database.root.directory";
+
     private SQLiteDatabaseProperties() { }
 
-    public static String getDatabaseDirectory(String databaseName)
+    public static String getDatabaseDirectory(String filename)
       throws DBUtilsException {
-        return PropertiesHandler.getProperty(databaseName,
-          DATABASE_DIRECTORY_KEY);
+        String rootDirectory = PropertiesHandler.getProperty(filename,
+          DATABASE_ROOT_DIRECTORY_KEY);
+        String subDirectory = PropertiesHandler.getRequiredProperty(
+          filename, DATABASE_DIRECTORY_KEY);
+        if(rootDirectory != null)
+            return rootDirectory + "/" + subDirectory;
+        return subDirectory;
     }
 
-    public static String getDatabaseFileExtension(String databaseName)
+    public static String getDatabaseFileExtension(String filename)
       throws DBUtilsException {
-        return PropertiesHandler.getProperty(databaseName,
+        return PropertiesHandler.getRequiredProperty(filename,
           DATABASE_FILE_EXTENSION_KEY);
     }
 }
