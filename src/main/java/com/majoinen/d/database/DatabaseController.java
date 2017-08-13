@@ -57,5 +57,7 @@ public interface DatabaseController {
      */
     BatchQuery prepareBatchQuery(List<String> queries) throws DBUtilsException;
 
+    boolean databaseExists() throws DBUtilsException;
+
     void setProperty(String key, String value) throws DBUtilsException;
 }

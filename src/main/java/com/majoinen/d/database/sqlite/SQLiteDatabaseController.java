@@ -42,6 +42,14 @@ public class SQLiteDatabaseController extends SQLDatabaseController {
     }
 
     @Override
+    public boolean databaseExists() throws DBUtilsException {
+        File database = new File(SQLiteDatabaseProperties
+          .getDatabaseDirectory(configFilename) + "/" + databaseName + "." +
+          SQLiteDatabaseProperties.getDatabaseFileExtension(configFilename));
+        return database.exists();
+    }
+
+    @Override
     public void setProperty(String key, String value) throws DBUtilsException {
         PropertiesHandler.setProperty(configFilename, key, value);
     }
