@@ -156,7 +156,8 @@ public class DBUtilsConnection {
      */
     private boolean closeStatement() throws DBUtilsException {
         try {
-            statement.close();
+            if (statement != null && !statement.isClosed())
+                statement.close();
         } catch(SQLException e) {
             logger.error("[DBUtils] SQLException closing statement");
             throw new DBUtilsException("[DBUtils] Error closing statement", e);
@@ -173,7 +174,8 @@ public class DBUtilsConnection {
      */
     private boolean closeConnection() throws DBUtilsException {
         try {
-            connection.close();
+            if (connection != null && !connection.isClosed())
+                connection.close();
         } catch(SQLException e) {
             logger.error("[DBUtils] SQLException closing connection");
             throw new DBUtilsException("[DBUtils] Error closing connection", e);
