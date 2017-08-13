@@ -5,8 +5,6 @@ import com.majoinen.d.database.Query;
 import com.majoinen.d.database.exception.DBUtilsException;
 import com.majoinen.d.database.exception.TableMismatchException;
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,9 +19,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
@@ -34,9 +30,6 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @PrepareForTest( { FileUtils.class })
 @PowerMockIgnore("javax.management.*")
 public class SQLiteDatabaseInitialiserTest {
-
-    private static final Logger logger =
-      LogManager.getLogger(SQLiteDatabaseInitialiserTest.class);
 
     @Mock private SQLiteDatabaseController databaseController;
     @Mock private BatchQuery batchQuery;
