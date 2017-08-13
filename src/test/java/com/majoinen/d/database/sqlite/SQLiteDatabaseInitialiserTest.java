@@ -1,7 +1,9 @@
 package com.majoinen.d.database.sqlite;
 
 import com.majoinen.d.database.BatchQuery;
+import com.majoinen.d.database.Query;
 import com.majoinen.d.database.exception.DBUtilsException;
+import com.majoinen.d.database.exception.TableMismatchException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +21,9 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
@@ -36,6 +40,7 @@ public class SQLiteDatabaseInitialiserTest {
 
     @Mock private SQLiteDatabaseController databaseController;
     @Mock private BatchQuery batchQuery;
+    @Mock private Query query;
 
     private SQLiteDatabaseInitialiser initialiser;
 
@@ -45,6 +50,8 @@ public class SQLiteDatabaseInitialiserTest {
 
         when(databaseController.prepareBatchQuery(anyList()))
           .thenReturn(batchQuery);
+        when(databaseController.prepareQuery(anyString()))
+          .thenReturn(query);
 
         initialiser = SQLiteDatabaseInitialiser.getInstance(databaseController);
     }
@@ -104,5 +111,32 @@ public class SQLiteDatabaseInitialiserTest {
     public void initTable() throws Exception {
         when(batchQuery.executeUpdate()).thenReturn(1);
         assertTrue(initialiser.initTable("test_table"));
+    }
+
+    @Test
+    public void verifyTableNullSQL() throws Exception {
+        when(query.setParameter(anyString(), anyString())).thenReturn(query);
+        when(query.executeAndMap(resultSet -> resultSet.getString(anyString())))
+          .thenReturn(null);
+        assertTrue(!initialiser.verifyTable("test_table"));
+    }
+
+    @Test(expected = TableMismatchException.class)
+    public void verifyTableMismatch() throws Exception {
+        String unexpected = "UNEXPECTED QUERY";
+        when(query.setParameter(anyString(), anyString())).thenReturn(query);
+        when(query.executeAndMap(any())).thenReturn(unexpected);
+        initialiser.verifyTable("test_table");
+    }
+
+    @Test
+    public void verifyTable() throws Exception {
+        String expected = "CREATE TABLE `test_table`\n" +
+          "    (`id` int,\n" +
+          "     `uuid` TEXT NOT NULL,\n" +
+          "     PRIMARY KEY(`id`))";
+        when(query.setParameter(anyString(), anyString())).thenReturn(query);
+        when(query.executeAndMap(any())).thenReturn(expected);
+        assertTrue(initialiser.verifyTable("test_table"));
     }
 }

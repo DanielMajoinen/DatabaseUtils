@@ -124,7 +124,7 @@ public class SQLiteDatabaseInitialiser implements DatabaseInitialiser {
      * table; If the database config file is not found or if there
      * are any permission issues when accessing the config file.
      */
-    private boolean verifyTable(String tableName) throws DBUtilsException {
+    boolean verifyTable(String tableName) throws DBUtilsException {
         String query = getTableSQL(tableName, true);
         // Get current schema from database
         String sql = databaseController
