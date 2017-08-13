@@ -39,7 +39,7 @@ public class DBUtilsConnectionTest {
     @AfterClass
     public static void afterAll() throws Exception {
         if(!new File("test/database.db").delete())
-            throw new Exception("Failed deleting test db directory");
+            throw new Exception("Failed deleting test db");
         if(!new File("test/").delete())
             throw new Exception("Failed deleting test db directory");
     }
