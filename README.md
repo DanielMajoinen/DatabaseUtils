@@ -5,7 +5,8 @@ Currently there is only support for SQLite, but other JDBC connections are plann
 
 Configuration:
 ---
-Each database connection will require its own `.properties` file which is named the same as the database. These property files are required to be placed in the `resources/config/` directory. Each database type requires 
+Each database connection will require its own `.properties` file which is named  after the database it is for. These property 
+files are required to be placed in the `resources/config/` directory. Each database type requires 
 its own specific properties, but all <strong>MUST</strong> define the database 
 type.
 
@@ -18,45 +19,35 @@ Sample SQLite properties file:
     database.type=SQLite
     database.directory=data
     database.file.extension=db
-    
-    table.names.delimiter=:
-    table.names=user
 
-Database Initialisation:
----
-
-To automatically create and verify tables the database must be initialised:
-
-    databaseController.init();
-
-###### Table Creation & Verification
-For each table defined in the configuration, a corresponding sql file must be placed in `resources/sql/`, with the query to create the table as its contents. This will be used on instantiation of the database controller where each table will be verified against the appropriate sql file. If the table does not exist, the contents will be used to create the table. If the table does exist but fails verification an exception will be thrown.
-
-Example: `resources/sql/user.sql`
-
-    CREATE TABLE `user`
-        (`id` int,
-         `name` char[15] NOT NULL,
-         `password` char[36] NOT NULL,
-         PRIMARY KEY(`id`))
-
-###### Insert On Creation
-An insert sql file can optionally be included for each table. This should contain insert queries for the corresponding table and will <strong>ONLY</strong> be run after creation of the table. The insert file must be named after the table with `-insert` appended to its name.
+File based databases will require a template database located in 
+`resources/databases/` which will be copied on init.
 
 Example:
 
-    resources/sql/user-insert.sql
+    resources/databases/dbutils.db
 
-<strong>NOTE:</strong> Insert queries should be separated with a `;`
-
-    INSERT INTO `user` ('name', 'password') VALUES ('user1', 'pass');
-    INSERT INTO `user` ('name', 'password') VALUES ('user2', 'pass')
+Database Initialisation:
+---
 
 Usage:
 ---
 #### Instantiate a Database Controller:
 
+Instantiate a database controller which has the same name as its config file:
+
     DatabaseController databaseController = DatabaseControllerFactory.getController(DATABASE_NAME);
+
+Instantiate a database controller which has a different name to its config file:
+
+    DatabaseController databaseController = DatabaseControllerFactory.getController(DATABASE_NAME, CONFIG_FILENAME);
+
+#### Initialisation:
+
+To automatically create the database, the database controller must be initialised:
+
+    databaseController.init();
+
 
 #### INSERT:
 
@@ -128,7 +119,7 @@ Example using lambda expression:
  
 Example using lambda expression:
 
-    List<String> sql = databaseController
+    List<String> list = databaseController
       .prepareQuery(SELECT_QUERY)
       .setParameter(":parameter", parameter)
       .executeAndMapAll(resultSet ->
