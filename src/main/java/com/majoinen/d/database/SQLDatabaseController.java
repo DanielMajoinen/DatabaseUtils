@@ -1,8 +1,8 @@
 package com.majoinen.d.database;
 
 import com.majoinen.d.database.exception.DBUtilsException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.majoinen.d.database.log.Logger;
+import com.majoinen.d.database.log.LogManager;
 
 import java.util.List;
 
@@ -23,6 +23,14 @@ public abstract class SQLDatabaseController implements DatabaseController {
         this.configFilename = filename;
     }
 
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getConfigFilename() {
+        return configFilename;
+    }
+
     /**
      * Prepare a provided single query for execution.
      *
@@ -35,7 +43,7 @@ public abstract class SQLDatabaseController implements DatabaseController {
      */
     @Override
     public Query prepareQuery(String query) throws DBUtilsException {
-        logger.debug("[DBUtils] Preparing single query");
+        logger.debug("Preparing single query");
         return new Query(new DBUtilsConnection(DatabaseConnectionProviderFactory
             .getConnectionProvider(databaseName, configFilename)), query);
     }
@@ -53,7 +61,7 @@ public abstract class SQLDatabaseController implements DatabaseController {
     @Override
     public BatchQuery prepareBatchQuery(List<String> queries) throws
       DBUtilsException {
-        logger.debug("[DBUtils] Preparing list of batch queries");
+        logger.debug("Preparing list of batch queries");
         return prepareBatchQuery(queries.toArray(new String[0]));
     }
 
@@ -70,7 +78,7 @@ public abstract class SQLDatabaseController implements DatabaseController {
     @Override
     public BatchQuery prepareBatchQuery(String... queries) throws
       DBUtilsException {
-        logger.debug("[DBUtils] Preparing batch queries");
+        logger.debug("Preparing batch queries");
         DBUtilsConnection connection = new DBUtilsConnection(
           DatabaseConnectionProviderFactory.getConnectionProvider(databaseName,
             configFilename));

@@ -1,8 +1,8 @@
 package com.majoinen.d.database;
 
 import com.majoinen.d.database.exception.DBUtilsException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.majoinen.d.database.log.Logger;
+import com.majoinen.d.database.log.LogManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -58,7 +58,7 @@ public class DBUtilsConnection {
         try {
             return statement.executeUpdate();
         } catch (SQLException e) {
-            throw new DBUtilsException("[DBUtils] Error executing update", e);
+            throw new DBUtilsException("Error executing update", e);
         }
     }
 
@@ -72,7 +72,7 @@ public class DBUtilsConnection {
         try {
             return statement.executeQuery();
         } catch (SQLException e) {
-            throw new DBUtilsException("[DBUtils] Error executing query", e);
+            throw new DBUtilsException("Error executing query", e);
         }
     }
 
@@ -92,7 +92,7 @@ public class DBUtilsConnection {
         try {
             connection.setAutoCommit(false);
         } catch(SQLException e) {
-            throw new DBUtilsException("[DBUtils] Error disabling auto commit",
+            throw new DBUtilsException("Error disabling auto commit",
               e);
         }
         return true;
@@ -109,12 +109,12 @@ public class DBUtilsConnection {
     public boolean prepareStatement(String sql) throws
       DBUtilsException {
         if(sql == null || sql.length() == 0)
-            throw new DBUtilsException("[DBUtils] Null or empty query");
+            throw new DBUtilsException("Null or empty query");
         openConnection();
         try {
             statement = connection.prepareStatement(sql);
         } catch(SQLException e) {
-            throw new DBUtilsException("[DBUtils] Error preparing statement",
+            throw new DBUtilsException("Error preparing statement",
               e);
         }
         return true;
@@ -131,7 +131,7 @@ public class DBUtilsConnection {
             if (connection == null || connection.isClosed())
                 connection = connectionProvider.openConnection();
         } catch(SQLException e) {
-            throw new DBUtilsException("[DBUtils] Error opening connection", e);
+            throw new DBUtilsException("Error opening connection", e);
         }
     }
 
@@ -143,7 +143,7 @@ public class DBUtilsConnection {
      * statement or connection.
      */
     public boolean close() throws DBUtilsException {
-        logger.debug("[DBUtils] Closing connection to the database");
+        logger.debug("Closing connection to the database");
         return closeStatement() && closeConnection();
     }
 
@@ -159,8 +159,8 @@ public class DBUtilsConnection {
             if (statement != null && !statement.isClosed())
                 statement.close();
         } catch(SQLException e) {
-            logger.error("[DBUtils] SQLException closing statement");
-            throw new DBUtilsException("[DBUtils] Error closing statement", e);
+            logger.error("SQLException closing statement");
+            throw new DBUtilsException("Error closing statement", e);
         }
         return true;
     }

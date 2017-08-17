@@ -2,9 +2,9 @@ package com.majoinen.d.database.sqlite;
 
 import com.majoinen.d.database.SQLDatabaseController;
 import com.majoinen.d.database.exception.DBUtilsException;
+import com.majoinen.d.database.log.Logger;
+import com.majoinen.d.database.log.LogManager;
 import com.majoinen.d.database.util.PropertiesHandler;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 
@@ -37,15 +37,13 @@ public class SQLiteDatabaseController extends SQLDatabaseController {
      */
     @Override
     public void init() throws DBUtilsException {
-        logger.info("[DBUtils] Initialising database");
-        SQLiteDatabaseInitialiser.getInstance(this).init(configFilename);
+        logger.debug("Initialising database");
+        SQLiteDatabaseInitialiser.getInstance(this).init();
     }
 
     @Override
     public boolean databaseExists() throws DBUtilsException {
-        File database = new File(SQLiteDatabaseProperties
-          .getDatabaseDirectory(configFilename) + "/" + databaseName + "." +
-          SQLiteDatabaseProperties.getDatabaseFileExtension(configFilename));
+        File database = new File(getDatabaseAbsolutePath());
         return database.exists();
     }
 

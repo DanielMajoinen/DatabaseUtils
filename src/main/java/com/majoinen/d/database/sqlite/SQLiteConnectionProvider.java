@@ -2,8 +2,8 @@ package com.majoinen.d.database.sqlite;
 
 import com.majoinen.d.database.DatabaseConnectionProvider;
 import com.majoinen.d.database.exception.DBUtilsException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.majoinen.d.database.log.LogManager;
+import com.majoinen.d.database.log.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -40,12 +40,13 @@ public class SQLiteConnectionProvider implements DatabaseConnectionProvider {
     @Override
     public synchronized Connection openConnection() throws
       DBUtilsException {
-        logger.debug("[DBUtils] Opening connection to the database");
+        String filename =
+          SQLiteDatabaseProperties.getDatabaseDirectory(configFilename) +
+          "/" + databaseName + "." +
+          SQLiteDatabaseProperties.getDatabaseFileExtension(configFilename);
+        logger.debug("Opening connection to the database: "+filename);
         try {
-            return DriverManager.getConnection(DATABASE_TYPE_PREFIX +
-              SQLiteDatabaseProperties.getDatabaseDirectory(configFilename) +
-              "/" + databaseName + "." + SQLiteDatabaseProperties
-              .getDatabaseFileExtension(configFilename));
+            return DriverManager.getConnection(DATABASE_TYPE_PREFIX + filename);
         } catch (SQLException e) {
             throw new DBUtilsException("Error opening connection", e);
         }
