@@ -29,6 +29,12 @@ public class SQLiteDatabaseController extends SQLDatabaseController {
         this.configFilename = configFilename;
     }
 
+    public String getDatabaseAbsolutePath() throws DBUtilsException {
+        return SQLiteDatabaseProperties.getDatabaseDirectory(configFilename) +
+          "/" + databaseName + "." +
+          SQLiteDatabaseProperties.getDatabaseFileExtension(configFilename);
+    }
+
     /**
      * Initialise, verify and if needed create any missing tables.
      *
