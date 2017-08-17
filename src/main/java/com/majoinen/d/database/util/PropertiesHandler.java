@@ -49,12 +49,11 @@ public final class PropertiesHandler {
                 properties.load(inputStream);
                 inputStream.close();
             } catch(IOException e) {
-                throw new DBUtilsException(
-                  "[DBUtils] Error loading properties file", e);
+                throw new DBUtilsException("Error loading properties file", e);
             }
         } else {
             throw new ConfigFileNotFoundException(
-              "[DBUtils] DBUtils requires config file: resources" +
+              "DBUtils requires config file: resources" +
                 CONFIG_RESOURCE_DIR + filename + PROPERTIES_FILE_EXTENSION);
         }
 

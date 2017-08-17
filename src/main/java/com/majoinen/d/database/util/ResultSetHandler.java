@@ -24,8 +24,7 @@ public final class ResultSetHandler {
                 return null;
             return mapper.map(resultSet);
         } catch(SQLException e) {
-            throw new DBUtilsException(
-              "[DBUtils] Error mapping results to object", e);
+            throw new DBUtilsException("Error mapping results to object", e);
         } finally {
             closeResultSet(resultSet);
         }
@@ -40,8 +39,7 @@ public final class ResultSetHandler {
             while(resultSet.next())
                 list.add(mapper.map(resultSet));
         } catch(SQLException e) {
-            throw new DBUtilsException(
-              "[DBUtils] Error mapping results to list", e);
+            throw new DBUtilsException("Error mapping results to list", e);
         } finally {
             closeResultSet(resultSet);
         }
@@ -54,7 +52,7 @@ public final class ResultSetHandler {
             if(resultSet != null && !resultSet.isClosed())
                 resultSet.close();
         } catch(SQLException e) {
-            throw new DBUtilsException("[DBUtils] Error closing ResultSet", e);
+            throw new DBUtilsException("Error closing ResultSet", e);
         }
     }
 }
