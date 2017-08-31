@@ -156,12 +156,15 @@ public class DBUtilsConnection {
      */
     private boolean closeStatement() throws DBUtilsException {
         try {
-            if (statement != null && !statement.isClosed())
+            if (statement != null && !statement.isClosed()) {
+                logger.debug("Statement OPEN: Closing statement");
                 statement.close();
+            }
         } catch(SQLException e) {
             logger.error("SQLException closing statement");
             throw new DBUtilsException("Error closing statement", e);
         }
+        logger.debug("Statement CLOSED");
         return true;
     }
 
@@ -174,12 +177,15 @@ public class DBUtilsConnection {
      */
     private boolean closeConnection() throws DBUtilsException {
         try {
-            if (connection != null && !connection.isClosed())
+            if (connection != null && !connection.isClosed()) {
+                logger.debug("Connection OPEN: Closing connection");
                 connection.close();
+            }
         } catch(SQLException e) {
-            logger.error("[DBUtils] SQLException closing connection");
-            throw new DBUtilsException("[DBUtils] Error closing connection", e);
+            logger.error("SQLException closing connection");
+            throw new DBUtilsException("Error closing connection", e);
         }
+        logger.debug("Connection CLOSED");
         return true;
     }
 
