@@ -1,6 +1,8 @@
 package com.majoinen.d.database.util;
 
 import com.majoinen.d.database.exception.DBUtilsException;
+import com.majoinen.d.database.log.LogManager;
+import com.majoinen.d.database.log.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,17 +17,27 @@ import java.util.List;
  */
 public final class ResultSetHandler {
 
+    private static final Logger logger =
+      LogManager.getLogger(ResultSetHandler.class);
+
     private ResultSetHandler() { }
 
     public static <T> T handle(ResultSet resultSet, ObjectMapper<T> mapper)
       throws DBUtilsException {
+        logger.debug("Handling ResultSet");
         try {
-            if(resultSet == null || resultSet.isClosed())
+            if(resultSet == null || resultSet.isClosed()) {
+                logger.debug("ResultSet null or closed");
                 return null;
+            }
+            logger.debug("Moving cursor to first row");
+            resultSet.next();
+            logger.debug("Mapping to object");
             return mapper.map(resultSet);
         } catch(SQLException e) {
             throw new DBUtilsException("Error mapping results to object", e);
         } finally {
+            logger.debug("Closing ResultSet");
             closeResultSet(resultSet);
         }
     }
