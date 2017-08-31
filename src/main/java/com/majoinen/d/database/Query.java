@@ -1,6 +1,8 @@
 package com.majoinen.d.database;
 
 import com.majoinen.d.database.exception.DBUtilsException;
+import com.majoinen.d.database.log.LogManager;
+import com.majoinen.d.database.log.Logger;
 import com.majoinen.d.database.util.ObjectMapper;
 import com.majoinen.d.database.util.ResultSetHandler;
 import com.majoinen.d.database.util.SQLParameterParser;
@@ -18,6 +20,8 @@ import java.util.Map;
  * @version 1.0, 10/7/17
  */
 public class Query {
+
+    private static final Logger logger = LogManager.getLogger(Query.class);
 
     private final DBUtilsConnection connection;
     private String sql;
@@ -134,6 +138,7 @@ public class Query {
           .removeParameterKeys(sql, parameters));
         if(!parameters.isEmpty())
             setParameters(SQLParameterParser.getParameterKeys(sql, parameters));
+        parameters.clear();
     }
 
     /**
@@ -160,6 +165,7 @@ public class Query {
      * query or mapping the object.
      */
     public <T> T executeAndMap(ObjectMapper<T> mapper) throws DBUtilsException {
+        logger.debug("Executing query and mapping to object");
         try {
             return ResultSetHandler.handle(executeQuery(), mapper);
         } finally {
