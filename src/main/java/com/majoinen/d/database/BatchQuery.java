@@ -62,15 +62,13 @@ public class BatchQuery extends Query {
      */
     public BatchQuery prepareBatchQuery(String sql) throws DBUtilsException {
         try {
-            super.setSql(sql);
             super.prepareStatementWithParameters();
             affectedRows += super.getDBUtilsConnection().executeUpdate();
-            super.getDBUtilsConnection().prepareStatement(sql);
+            super.setSql(sql);
         } catch(DBUtilsException e) {
             super.getDBUtilsConnection().rollback();
             super.getDBUtilsConnection().close();
-            throw new DBUtilsException(
-              "[DBUtils] Error executing batch update", e);
+            throw new DBUtilsException("Error executing batch update", e);
         }
         return this;
     }
@@ -90,8 +88,7 @@ public class BatchQuery extends Query {
             return affectedRows + super.getDBUtilsConnection().executeUpdate();
         } catch(DBUtilsException e) {
             super.getDBUtilsConnection().rollback();
-            throw new DBUtilsException(
-              "[DBUtils] Error executing batch update", e);
+            throw new DBUtilsException("Error executing batch update", e);
         } finally {
             super.getDBUtilsConnection().commit();
             super.getDBUtilsConnection().close();
