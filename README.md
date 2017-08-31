@@ -27,9 +27,6 @@ Example:
 
     resources/databases/dbutils.db
 
-Database Initialisation:
----
-
 Usage:
 ---
 #### Instantiate a Database Controller:
