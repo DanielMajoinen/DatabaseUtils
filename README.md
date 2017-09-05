@@ -1,5 +1,8 @@
 DatabaseUtils
 ---
+
+[![Build Status](https://travis-ci.org/DanielMajoinen/DatabaseUtils.svg)](https://travis-ci.org/DanielMajoinen/DatabaseUtils)
+
 DatabaseUtils is a library providing easy initialisation, verification and access to JDBC databases. 
 Currently there is only support for SQLite, but other JDBC connections are planned to be supported in the near future.
 
