@@ -85,22 +85,6 @@ public class Query {
     }
 
     /**
-     * Set an encrypted parameter by providing its substring in the sql and its
-     * desired value.
-     *
-     * @param key a substring within the sql query which will be replaced
-     * with the supplied value using setObject().
-     * @param value the value for the supplied key, which will be encrypted.
-     * @param <T> The type of the value.
-     * @return the Query with the parameter added.
-     */
-    // TODO: Implement encrypted parameter
-    public <T> Query setEncryptedParameter(String key, T value) {
-        parameters.put(key, value);
-        return this;
-    }
-
-    /**
      * Execute an update query, returning the value of affected rows.
      *
      * @return The amount of affected rows caused by the query.

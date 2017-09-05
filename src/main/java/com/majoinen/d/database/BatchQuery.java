@@ -36,22 +36,6 @@ public class BatchQuery extends Query {
     }
 
     /**
-     * Set an encrypted parameter by providing its substring in the sql and its
-     * desired value.
-     *
-     * @param key a substring within the sql query which will be replaced
-     * with the supplied value using setObject().
-     * @param value the value for the supplied key, which will be encrypted.
-     * @param <T> The type of the value.
-     * @return the BatchQuery with the parameter added.
-     */
-    @Override
-    public <T> BatchQuery setEncryptedParameter(String key, T value) {
-        super.setEncryptedParameter(key, value);
-        return this;
-    }
-
-    /**
      * Execute the current query, and prepare a new query. This method is
      * only accessible after a query has already been prepared.
      *
