@@ -85,6 +85,18 @@ public class Query {
     }
 
     /**
+     * Get a parameter by providing its substring in the sql.
+     *
+     * @param key a substring within the sql query set as a parameter key.
+     * @return The object value mapped to the key.
+     */
+    public Object getParameter(String key) {
+        if(parameters.containsKey(key))
+            return parameters.get(key);
+        throw new NullPointerException("Key does not exist");
+    }
+
+    /**
      * Execute an update query, returning the value of affected rows.
      *
      * @return The amount of affected rows caused by the query.
