@@ -2,7 +2,6 @@ package com.majoinen.d.database;
 
 import com.majoinen.d.database.util.ObjectMapper;
 import com.majoinen.d.database.util.ResultSetHandler;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,11 +54,6 @@ public class QueryTest {
     public void beforeEachTest() throws Exception {
         MockitoAnnotations.initMocks(this);
         query = new Query(connection, null);
-    }
-
-    @After
-    public void afterEachTest() throws Exception {
-
     }
 
     @Test
