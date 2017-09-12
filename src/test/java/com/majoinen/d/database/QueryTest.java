@@ -1,5 +1,6 @@
 package com.majoinen.d.database;
 
+import com.majoinen.d.database.exception.DBUtilsException;
 import com.majoinen.d.database.util.ObjectMapper;
 import com.majoinen.d.database.util.ResultSetHandler;
 import org.junit.Before;
@@ -105,6 +106,16 @@ public class QueryTest {
         assertEquals(query.executeUpdate(), EXPECTED_AFFECTED_ROWS);
     }
 
+    @Test(expected = DBUtilsException.class)
+    public void executeUpdateThrowsException() throws Exception {
+        when(connection.prepareStatement(anyString())).thenReturn(true);
+        when(connection.executeUpdate()).thenThrow(DBUtilsException.class);
+
+        query.setSql(SQL);
+        assertEquals(query.setParameter(KEY, VALUE), query);
+        query.executeUpdate();
+    }
+
     @Test
     public void executeAndMap() throws Exception {
         PowerMockito.mockStatic(ResultSetHandler.class);
@@ -114,6 +125,17 @@ public class QueryTest {
           .thenReturn(EXPECTED_MAP);
 
         assertEquals(query.executeAndMap(stringMapper), EXPECTED_MAP);
+    }
+
+    @Test(expected = DBUtilsException.class)
+    public void executeAndMapThrowsException() throws Exception {
+        PowerMockito.mockStatic(ResultSetHandler.class);
+        when(connection.prepareStatement(anyString())).thenReturn(true);
+        when(connection.executeQuery()).thenReturn(resultSet);
+        when(ResultSetHandler.handle(resultSet, stringMapper))
+          .thenThrow(DBUtilsException.class);
+
+        query.executeAndMap(stringMapper);
     }
 
     @Test
@@ -127,5 +149,18 @@ public class QueryTest {
           .thenReturn(EXPECTED_MAP_LIST);
 
         assertEquals(query.executeAndMapAll(stringMapper), EXPECTED_MAP_LIST);
+    }
+
+    @Test(expected = DBUtilsException.class)
+    public void executeAndMapAllThrowsException() throws Exception {
+        EXPECTED_MAP_LIST.add(EXPECTED_MAP);
+
+        PowerMockito.mockStatic(ResultSetHandler.class);
+        when(connection.prepareStatement(anyString())).thenReturn(true);
+        when(connection.executeQuery()).thenReturn(resultSet);
+        when(ResultSetHandler.handleAll(resultSet, stringMapper))
+          .thenThrow(DBUtilsException.class);
+
+        query.executeAndMapAll(stringMapper);
     }
 }
