@@ -3,8 +3,23 @@ DatabaseUtils
 
 [![Build Status](https://travis-ci.org/DanielMajoinen/DatabaseUtils.svg)](https://travis-ci.org/DanielMajoinen/DatabaseUtils)
 
-DatabaseUtils is a library providing easy initialisation, verification and access to JDBC databases. 
-Currently there is only support for SQLite, but other JDBC connections are planned to be supported in the near future.
+DatabaseUtils is a library providing easy initialisation, verification and access to JDBC compliant databases. 
+Currently there is only support for SQLite, but other types are planned to be supported in the near future.
+
+Example:
+---
+Here is a quick demonstration on how simple DatabaseUtils is to use once it is set up:
+
+    private static final String EXAMPLE_INSERT_QUERY = 
+       "INSERT INTO `user` ('email', 'password') VALUES (:email, :password)";
+    
+    ...
+    
+     int affectedRows = databaseController
+       .prepareQuery(EXAMPLE_INSERT_QUERY)
+       .setParameter(":email", email)
+       .setParameter(":password", password)
+       .executeUpdate();
 
 Configuration:
 ---
